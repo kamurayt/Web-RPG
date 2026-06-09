@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Chronicles of Fate</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+:root{
+  --bg:#0f1923;--bg2:#162030;--bg3:#1c2a3a;--bg4:#223040;
+  --panel:#1a2535;--panel2:#1e2d40;
+  --border:#2a3f55;--border2:#3a5570;--border3:#4a6a88;
+  --gold:#e8b84c;--gold2:#f5d068;--gold3:#fff8e0;
+  --red:#d94f4f;--red2:#f07070;
+  --blue:#3a8fd4;--blue2:#5aafee;--blue3:#90d0ff;
+  --green:#3aaa60;--green2:#55cc80;--green3:#88eeb0;
+  --purple:#8844cc;--purple2:#aa66ee;--purple3:#cc99ff;
+  --cyan:#22c0d8;--cyan2:#44ddf0;
+  --orange:#e07030;--orange2:#f09050;
+  --text:#cce0f0;--text2:#8ab0cc;--text3:#4a7090;
+  --stamina:#f0b030;
+  --boss:#cc3366;--boss2:#ee5588;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;
+  min-height:100vh;display:flex;justify-content:center;overflow-x:hidden;}
+#app{width:390px;max-width:100vw;height:100vh;height:100dvh;display:flex;flex-direction:column;
+  background:linear-gradient(160deg,#0f1923 0%,#12202e 60%,#0f1d2a 100%);
+  box-shadow:0 0 40px rgba(0,0,0,.6);}
+
+/* ── TOPBAR ── */
+#topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 12px 5px;
+  background:linear-gradient(180deg,#0a1520,#0f1d2c);
+  border-bottom:1px solid var(--border2);
+  flex-shrink:0;}
+#char-mini{display:flex;align-items:center;gap:7px;}
+#char-icon{width:32px;height:32px;border-radius:7px;background:var(--bg3);
+  border:1px solid var(--border3);display:flex;align-items:center;justify-content:center;font-size:17px;}
+#char-name{font-family:'Cinzel',serif;font-size:11px;color:var(--gold2);font-weight:600;line-height:1.2;}
+#char-class-lv{font-size:9px;color:var(--text2);}
+#top-stats{display:flex;gap:7px;align-items:center;}
+.ts{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.ts-bar{width:44px;height:4px;background:rgba(0,0,0,.5);border-radius:2px;overflow:hidden;}
+.ts-fill{height:100%;border-radius:2px;transition:width .4s;}
+.tsf-hp{background:linear-gradient(90deg,#c03030,#e85050);}
+.tsf-st{background:linear-gradient(90deg,#c08020,#f0b030);}
+.ts-lbl{font-size:7px;color:var(--text3);letter-spacing:.5px;}
+.coins-disp{font-size:11px;font-weight:700;color:var(--gold2);}
+#title-tag{font-size:9px;color:var(--purple2);font-style:italic;margin-top:1px;}
+
+/* ── CONTENT ── */
+#content{flex:1;overflow-y:auto;padding:9px;min-height:0;}
+#content::-webkit-scrollbar{width:3px;}
+#content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ── NAV ── */
+#nav{display:grid;grid-template-columns:repeat(6,1fr);flex-shrink:0;
+  background:#080f18;border-top:1px solid var(--border2);
+  position:sticky;bottom:0;z-index:100;}
+.nb{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;padding:6px 2px;cursor:pointer;transition:all .15s;
+  border:none;background:transparent;color:var(--text3);
+  font-family:'Noto Sans JP',sans-serif;font-size:7px;}
+.nb.active{color:var(--blue2);background:rgba(58,143,212,.08);}
+.nb.boss-tab.active{color:var(--boss2);background:rgba(204,51,102,.08);}
+.nb:hover:not(.active){color:var(--text2);}
+.nb-icon{font-size:17px;}
+.nb.active .nb-icon{filter:drop-shadow(0 0 4px currentColor);}
+
+/* ── PANELS ── */
+.panel{background:var(--panel2);border:1px solid var(--border);border-radius:9px;
+  padding:11px;margin-bottom:7px;position:relative;overflow:hidden;}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--border2),transparent);}
+.pt{font-family:'Cinzel',serif;font-size:12px;color:var(--gold);
+  letter-spacing:1px;margin-bottom:9px;display:flex;align-items:center;gap:7px;}
+.pt::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border2),transparent);}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  padding:6px 12px;border-radius:7px;border:none;cursor:pointer;
+  font-family:'Noto Sans JP',sans-serif;font-size:11px;font-weight:700;
+  transition:all .15s;letter-spacing:.2px;}
+.btn-gold{background:linear-gradient(135deg,#9a6820,#c9953c,#e8c060);color:#0a0800;
+  box-shadow:0 2px 8px rgba(200,150,50,.3);}
+.btn-gold:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-blue{background:linear-gradient(135deg,#1a3f70,#2a6ab0,#3a8fd4);color:#fff;}
+.btn-green{background:linear-gradient(135deg,#1a5030,#2a8048,#3aaa60);color:#fff;}
+.btn-red{background:linear-gradient(135deg,#6a1818,#a83030,#d44848);color:#fff;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.btn-ghost:hover{border-color:var(--border3);color:var(--text);}
+.btn-cyan{background:linear-gradient(135deg,#0a4858,#1880a0,#22c0d8);color:#fff;}
+.btn-orange{background:linear-gradient(135deg,#6a3010,#b05020,#e07030);color:#fff;}
+.btn-boss{background:linear-gradient(135deg,#6a1030,#a82050,#cc3366);color:#fff;
+  box-shadow:0 2px 8px rgba(204,51,102,.3);}
+.btn-sm{padding:4px 8px;font-size:10px;}
+.btn-xs{padding:3px 6px;font-size:9px;}
+.btn-full{width:100%;}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important;filter:none!important;}
+
+/* ── TITLE ── */
+#screen-title{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:88vh;padding:20px;text-align:center;}
+.game-logo{font-family:'Cinzel',serif;font-size:28px;color:var(--gold2);
+  text-shadow:0 0 30px rgba(232,184,76,.4);font-weight:700;line-height:1.3;margin-bottom:3px;}
+.game-sub{font-size:10px;color:var(--text3);letter-spacing:3px;text-transform:uppercase;margin-bottom:28px;}
+.save-slot{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:9px;margin-bottom:6px;}
+.save-slot-name{font-size:12px;color:var(--text);font-weight:700;}
+.save-slot-info{font-size:9px;color:var(--text3);margin-top:1px;}
+
+/* ── CLASS CARDS ── */
+.class-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.cc{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:9px;cursor:pointer;transition:all .18s;text-align:center;}
+.cc:hover,.cc.sel{border-color:var(--blue2);background:rgba(58,143,212,.06);}
+.cc.sel{box-shadow:0 0 10px rgba(58,143,212,.25);}
+.ci{font-size:24px;margin-bottom:2px;}
+.cn{font-family:'Cinzel',serif;font-size:10px;color:var(--blue2);margin-bottom:2px;}
+.cd{font-size:8px;color:var(--text3);line-height:1.4;}
+.tags{display:flex;gap:2px;justify-content:center;margin-top:3px;flex-wrap:wrap;}
+.tag{font-size:7px;padding:1px 3px;border-radius:3px;font-weight:700;}
+.tag-str{background:rgba(209,79,79,.2);color:var(--red2);}
+.tag-mag{background:rgba(90,175,238,.2);color:var(--blue2);}
+.tag-heal{background:rgba(58,170,96,.2);color:var(--green2);}
+.tag-agi{background:rgba(170,102,238,.2);color:var(--purple2);}
+.tag-luck{background:rgba(232,184,76,.2);color:var(--gold2);}
+
+/* ── STAT ROWS ── */
+.sr{display:flex;align-items:center;gap:5px;margin-bottom:6px;}
+.si{font-size:12px;width:17px;text-align:center;flex-shrink:0;}
+.sn{font-size:9px;color:var(--text2);width:28px;flex-shrink:0;font-weight:700;}
+.sbw{flex:1;height:6px;background:rgba(0,0,0,.4);border-radius:3px;overflow:hidden;}
+.sbf{height:100%;border-radius:3px;transition:width .4s;}
+.sbf-hp {background:linear-gradient(90deg,#a02020,#e04040);}
+.sbf-atk{background:linear-gradient(90deg,#a06020,#e09030);}
+.sbf-def{background:linear-gradient(90deg,#204090,#3080e0);}
+.sbf-spd{background:linear-gradient(90deg,#602090,#a040e0);}
+.sbf-luk{background:linear-gradient(90deg,#208050,#40c070);}
+.sv{font-size:11px;color:var(--text);font-weight:700;min-width:32px;text-align:right;}
+.sbtn-row{display:flex;gap:2px;}
+.sadj{width:19px;height:19px;border-radius:4px;border:1px solid var(--border2);
+  background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0;}
+.sadj:hover{border-color:var(--gold);color:var(--gold);}
+.boost-badge{font-size:7px;color:var(--gold2);background:rgba(232,184,76,.15);
+  padding:1px 3px;border-radius:3px;font-weight:700;flex-shrink:0;}
+
+/* ── QUEST ── */
+.qcard{background:var(--bg3);border:1px solid var(--border);border-radius:7px;
+  padding:9px 10px;margin-bottom:6px;display:flex;align-items:center;gap:8px;
+  cursor:pointer;transition:all .15s;}
+.qcard:hover:not(.locked){border-color:var(--border3);background:var(--bg4);}
+.qcard.locked{opacity:.4;cursor:not-allowed;}
+.qi{font-size:20px;flex-shrink:0;}
+.qinfo{flex:1;min-width:0;}
+.qname{font-family:'Cinzel',serif;font-size:10px;color:var(--blue3);margin-bottom:1px;}
+.qdesc{font-size:8px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qmeta{display:flex;gap:4px;margin-top:2px;flex-wrap:wrap;}
+.qcost{font-size:8px;color:var(--stamina);font-weight:700;}
+.qrec{font-size:8px;color:var(--text3);}
+.qrew{font-size:8px;color:var(--green2);}
+.qbadge{padding:2px 5px;border-radius:3px;font-size:7px;font-weight:700;letter-spacing:.5px;flex-shrink:0;}
+.b-clear{background:rgba(58,170,96,.15);color:var(--green2);border:1px solid rgba(58,170,96,.3);}
+.b-new{background:rgba(209,79,79,.15);color:var(--red2);border:1px solid rgba(209,79,79,.3);}
+.b-lock{background:rgba(80,80,80,.15);color:#556;border:1px solid #334;}
+
+/* ── BOSS ── */
+.boss-card{background:linear-gradient(135deg,#1a0820,#250d30);
+  border:1px solid rgba(204,51,102,.4);border-radius:9px;
+  padding:11px;margin-bottom:7px;position:relative;overflow:hidden;}
+.boss-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--boss),transparent);}
+.boss-name{font-family:'Cinzel',serif;font-size:13px;color:var(--boss2);margin-bottom:3px;}
+.boss-desc{font-size:9px;color:var(--text2);margin-bottom:6px;}
+.boss-stats{display:flex;gap:8px;font-size:9px;color:var(--text3);margin-bottom:6px;flex-wrap:wrap;}
+.boss-reward{font-size:9px;color:var(--purple2);margin-bottom:7px;}
+.boss-clear-badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:8px;font-weight:700;
+  background:rgba(58,170,96,.15);color:var(--green2);border:1px solid rgba(58,170,96,.3);}
+
+/* ── BATTLE ── */
+#bwrap{background:var(--panel2);border:1px solid var(--border);border-radius:9px;
+  padding:12px;display:flex;flex-direction:column;gap:9px;}
+.bstage{display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(135deg,#0a1520,#0f1e30);
+  border-radius:7px;padding:10px;border:1px solid var(--border);min-height:100px;}
+.combatant{display:flex;flex-direction:column;align-items:center;gap:4px;width:44%;}
+.cicon{font-size:38px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6));}
+.cname{font-size:9px;color:var(--text2);font-weight:700;text-align:center;}
+.chp-t{width:100%;height:6px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;}
+.chp-f{height:100%;border-radius:3px;transition:width .4s;}
+.chp-p{background:linear-gradient(90deg,#882020,#e04040);}
+.chp-e{background:linear-gradient(90deg,#804010,#c06020);}
+.chp-boss{background:linear-gradient(90deg,#881040,#cc2060);}
+.chp-n{font-size:8px;color:var(--text3);text-align:center;margin-top:1px;}
+.vs-lbl{font-family:'Cinzel',serif;font-size:15px;color:var(--border2);}
+.blog{background:#080e18;border:1px solid var(--border);border-radius:6px;
+  padding:7px;height:110px;overflow-y:auto;font-size:10px;display:flex;flex-direction:column;gap:1px;}
+.blog::-webkit-scrollbar{width:2px;}
+.blog::-webkit-scrollbar-thumb{background:var(--border2);}
+.ll{line-height:1.6;}
+.la{color:#e07070;}.ld{color:#70a0e0;}.lh{color:#70d090;}.ls{color:var(--gold);}
+.llt{color:var(--purple2);}.lsp{color:var(--cyan2);}.lboss{color:var(--boss2);}
+.bact{display:flex;gap:6px;}
+
+/* ── EQUIP ── */
+.eslots{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:7px;}
+.eslot{background:var(--bg3);border:1px solid var(--border);border-radius:6px;
+  padding:6px;min-height:48px;position:relative;}
+.eslot.has-item{cursor:pointer;}
+.eslot.has-item:hover{border-color:var(--red2);}
+.esl-lbl{font-size:7px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:1px;font-weight:700;}
+.esl-name{font-size:9px;color:var(--gold2);line-height:1.3;}
+.esl-empty{font-size:9px;color:var(--text3);font-style:italic;}
+.esl-stats{font-size:7px;color:var(--text2);margin-top:1px;}
+.ilist{display:flex;flex-direction:column;gap:4px;}
+.irow{background:var(--bg3);border:1px solid var(--border);border-radius:7px;
+  padding:7px;display:flex;align-items:center;gap:7px;}
+.iicon{font-size:18px;flex-shrink:0;}
+.iinfo{flex:1;min-width:0;}
+.iname{font-size:10px;color:var(--text);font-weight:700;margin-bottom:1px;}
+.istats{font-size:8px;color:var(--text2);}
+.irarity{font-size:7px;font-weight:700;letter-spacing:.5px;margin-top:1px;}
+.r-common{color:#778;}.r-uncommon{color:var(--green2);}.r-rare{color:var(--blue2);}
+.r-epic{color:var(--purple2);}.r-legendary{color:var(--gold2);}
+.r-bossonly{color:var(--boss2);text-shadow:0 0 5px rgba(204,51,102,.4);}
+.sp-badge{display:inline-block;font-size:7px;color:var(--cyan2);
+  background:rgba(34,192,216,.12);padding:1px 3px;border-radius:2px;font-weight:700;margin-top:1px;}
+.eq-badge{display:inline-block;font-size:7px;color:var(--gold);
+  background:rgba(232,184,76,.1);padding:1px 3px;border-radius:2px;font-weight:700;border:1px solid rgba(232,184,76,.2);}
+.fav-badge{font-size:10px;cursor:pointer;flex-shrink:0;}
+.iact{display:flex;gap:2px;flex-shrink:0;align-items:center;}
+
+/* 装備強化 */
+.enhance-row{display:flex;align-items:center;gap:5px;margin-top:4px;}
+.enhance-lv{font-size:9px;color:var(--orange2);font-weight:700;}
+.enhance-cost{font-size:8px;color:var(--gold2);}
+
+/* ── SHOP ── */
+.shop-item{background:var(--bg3);border:1px solid var(--border);border-radius:7px;
+  padding:8px;margin-bottom:5px;display:flex;align-items:center;gap:7px;}
+.sp{font-size:10px;color:var(--gold2);font-weight:700;white-space:nowrap;}
+
+/* ── TOAST ── */
+.toast{position:fixed;top:50px;left:50%;transform:translateX(-50%);
+  background:var(--panel2);border:1px solid var(--border3);border-radius:7px;
+  padding:6px 14px;font-size:11px;color:var(--text);z-index:500;
+  animation:tIn .2s,tOut .2s 1.8s forwards;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.6);}
+@keyframes tIn{from{opacity:0;transform:translate(-50%,-8px);}to{opacity:1;transform:translate(-50%,0);}}
+@keyframes tOut{to{opacity:0;transform:translate(-50%,-8px);}}
+
+/* ── MISC ── */
+.erow{margin-bottom:7px;}
+.elbl{font-size:8px;color:var(--text3);margin-bottom:2px;display:flex;justify-content:space-between;}
+.etrk{height:4px;background:rgba(0,0,0,.4);border-radius:2px;overflow:hidden;}
+.efil{height:100%;background:linear-gradient(90deg,#4020a0,#7040d8);border-radius:2px;transition:width .5s;}
+.empty-st{text-align:center;padding:20px;color:var(--text3);font-size:10px;}
+.evolve-ready{animation:eglow 1.5s infinite alternate;}
+@keyframes eglow{from{box-shadow:0 0 5px rgba(232,184,76,.2);}to{box-shadow:0 0 14px rgba(232,184,76,.5);}}
+.info-box{background:rgba(58,143,212,.08);border:1px solid rgba(58,143,212,.2);
+  border-radius:6px;padding:7px 9px;font-size:9px;color:var(--text2);line-height:1.7;margin-bottom:7px;}
+.warn-box{background:rgba(240,112,112,.08);border:1px solid rgba(240,112,112,.2);
+  border-radius:6px;padding:5px 9px;font-size:9px;color:var(--red2);margin-bottom:5px;}
+.title-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;
+  background:linear-gradient(135deg,rgba(136,68,204,.2),rgba(170,102,238,.2));
+  border:1px solid rgba(170,102,238,.4);color:var(--purple2);margin-left:6px;}
+input[type=text]{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;
+  padding:8px 10px;color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:12px;
+  outline:none;width:100%;transition:border-color .15s;}
+input[type=text]:focus{border-color:var(--blue2);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar" style="display:none">
+    <div id="char-mini">
+      <div id="char-icon">⚔</div>
+      <div>
+        <div id="char-name">—</div>
+        <div id="char-class-lv">—</div>
+        <div id="title-tag"></div>
+      </div>
+    </div>
+    <div id="top-stats">
+      <div class="ts"><div class="ts-bar"><div id="tsf-hp" class="ts-fill tsf-hp" style="width:100%"></div></div><div class="ts-lbl">HP</div></div>
+      <div class="ts"><div class="ts-bar"><div id="tsf-st" class="ts-fill tsf-st" style="width:0%"></div></div><div class="ts-lbl">CD</div></div>
+      <div class="coins-disp">💰<span id="top-coins">0</span></div>
+    </div>
+  </div>
+  <div id="content"></div>
+  <nav id="nav" style="display:none">
+    <button class="nb active" data-s="status" onclick="go('status')"><span class="nb-icon">📊</span><span>ステ</span></button>
+    <button class="nb" data-s="quest"  onclick="go('quest')"> <span class="nb-icon">⚔</span><span>クエスト</span></button>
+    <button class="nb" data-s="equip"  onclick="go('equip')"> <span class="nb-icon">🔰</span><span>装備</span></button>
+    <button class="nb" data-s="shop"   onclick="go('shop')">  <span class="nb-icon">🏪</span><span>ショップ</span></button>
+    <button class="nb boss-tab" data-s="boss" onclick="go('boss')"><span class="nb-icon">👹</span><span>挑戦</span></button>
+    <button class="nb" data-s="class"  onclick="go('class')"> <span class="nb-icon">✨</span><span>職業</span></button>
+  </nav>
+</div>
+<script>
+// ═══════ CLASS TREE ═══════
+const CT={
+  swordsman:{name:'剣士',icon:'⚔',tier:0,desc:'バランス型の戦士',tags:['str'],
+    growth:{hp:7,atk:4,def:4,spd:2,luk:2},base:{hp:120,atk:16,def:10,spd:6,luk:4},
+    boost:['atk','def'],evolve1:['knight','hero'],skill:'斬撃'},
+  mage:{name:'魔法使い',icon:'🧙',tier:0,desc:'魔法で大ダメージ',tags:['mag'],
+    growth:{hp:3,atk:7,def:2,spd:4,luk:3},base:{hp:80,atk:22,def:5,spd:8,luk:5},
+    boost:['atk','spd'],evolve1:['sage','sorcerer'],skill:'魔法弾'},
+  cleric:{name:'僧侶',icon:'✚',tier:0,desc:'回復と支援に特化',tags:['heal'],
+    growth:{hp:5,atk:2,def:4,spd:2,luk:5},base:{hp:100,atk:9,def:12,spd:5,luk:8},
+    boost:['luk','def'],evolve1:['paladin','archpriest'],skill:'回復'},
+  thief:{name:'盗賊',icon:'🔪',tier:0,desc:'素早く急所を狙う',tags:['agi','luck'],
+    growth:{hp:4,atk:5,def:2,spd:6,luk:5},base:{hp:90,atk:18,def:6,spd:12,luk:8},
+    boost:['atk','spd'],evolve1:['ninja','pirate'],skill:'急所突き'},
+  archer:{name:'弓使い',icon:'🏹',tier:0,desc:'遠距離から安全に',tags:['agi'],
+    growth:{hp:4,atk:5,def:2,spd:5,luk:4},base:{hp:95,atk:17,def:8,spd:10,luk:6},
+    boost:['spd','luk'],evolve1:['hunter','magicArcher'],skill:'連射'},
+  knight:{name:'騎士',icon:'🔰',tier:1,desc:'鉄壁の防御',tags:['str'],
+    growth:{hp:9,atk:4,def:7,spd:1,luk:2},base:null,parent:'swordsman',
+    boost:['def','hp'],evolve1:['grandKnight'],skill:'シールドバッシュ'},
+  hero:{name:'勇者',icon:'🌟',tier:1,desc:'全能力が高い',tags:['str','luck'],
+    growth:{hp:7,atk:6,def:5,spd:4,luk:5},base:null,parent:'swordsman',
+    boost:['atk','luk'],evolve1:['legendHero'],skill:'勇者の一撃'},
+  sage:{name:'賢者',icon:'📖',tier:1,desc:'全魔法が使える',tags:['mag','heal'],
+    growth:{hp:4,atk:8,def:3,spd:4,luk:5},base:null,parent:'mage',
+    boost:['atk','luk'],evolve1:['archsage'],skill:'全体魔法'},
+  sorcerer:{name:'黒魔道士',icon:'💀',tier:1,desc:'圧倒的な攻撃魔法',tags:['mag'],
+    growth:{hp:3,atk:11,def:2,spd:4,luk:2},base:null,parent:'mage',
+    boost:['atk','atk'],evolve1:['demonLord'],skill:'滅却魔法'},
+  paladin:{name:'聖騎士',icon:'⚡',tier:1,desc:'攻防と回復を兼ねる',tags:['str','heal'],
+    growth:{hp:7,atk:5,def:6,spd:2,luk:6},base:null,parent:'cleric',
+    boost:['def','luk'],evolve1:['holyKnight'],skill:'聖なる一撃'},
+  archpriest:{name:'大神官',icon:'🌸',tier:1,desc:'強力な回復',tags:['heal'],
+    growth:{hp:6,atk:2,def:4,spd:3,luk:9},base:null,parent:'cleric',
+    boost:['luk','hp'],evolve1:['godPriest'],skill:'聖域'},
+  ninja:{name:'忍者',icon:'🌑',tier:1,desc:'最速・最高の回避',tags:['agi'],
+    growth:{hp:4,atk:6,def:2,spd:10,luk:5},base:null,parent:'thief',
+    boost:['spd','atk'],evolve1:['shadowMaster'],skill:'分身'},
+  pirate:{name:'海賊',icon:'💀',tier:1,desc:'略奪で高い金獲得',tags:['luck','str'],
+    growth:{hp:6,atk:7,def:3,spd:4,luk:8},base:null,parent:'thief',
+    boost:['luk','atk'],evolve1:['pirateKing'],skill:'略奪'},
+  hunter:{name:'狩人',icon:'🦅',tier:1,desc:'弱点特攻で高ダメージ',tags:['agi'],
+    growth:{hp:5,atk:7,def:3,spd:6,luk:5},base:null,parent:'archer',
+    boost:['atk','spd'],evolve1:['beastLord'],skill:'弱点特攻'},
+  magicArcher:{name:'魔弓士',icon:'🌠',tier:1,desc:'魔法の矢で貫通攻撃',tags:['mag','agi'],
+    growth:{hp:4,atk:8,def:2,spd:6,luk:6},base:null,parent:'archer',
+    boost:['atk','spd'],evolve1:['starGunner'],skill:'魔法矢'},
+  grandKnight:{name:'グランドナイト',icon:'🏰',tier:2,desc:'最強の盾',tags:['str'],
+    growth:{hp:11,atk:5,def:10,spd:1,luk:2},base:null,parent:'knight',boost:['def','hp'],evolve1:[],skill:'聖盾'},
+  legendHero:{name:'伝説の勇者',icon:'🌈',tier:2,desc:'伝説級の力',tags:['str','luck'],
+    growth:{hp:9,atk:8,def:6,spd:6,luk:7},base:null,parent:'hero',boost:['atk','luk'],evolve1:[],skill:'伝説の力'},
+  archsage:{name:'大賢者',icon:'🔮',tier:2,desc:'知の極致',tags:['mag','heal'],
+    growth:{hp:5,atk:10,def:3,spd:5,luk:7},base:null,parent:'sage',boost:['atk','luk'],evolve1:[],skill:'賢者の石'},
+  demonLord:{name:'魔王',icon:'👹',tier:2,desc:'破壊の化身',tags:['mag'],
+    growth:{hp:4,atk:14,def:2,spd:5,luk:2},base:null,parent:'sorcerer',boost:['atk','atk'],evolve1:[],skill:'滅世魔法'},
+  holyKnight:{name:'聖騎士王',icon:'✨',tier:2,desc:'聖と剣の融合',tags:['str','heal'],
+    growth:{hp:9,atk:7,def:8,spd:3,luk:8},base:null,parent:'paladin',boost:['def','luk'],evolve1:[],skill:'神聖剣'},
+  godPriest:{name:'神官長',icon:'🌟',tier:2,desc:'神の使者',tags:['heal'],
+    growth:{hp:7,atk:3,def:5,spd:4,luk:12},base:null,parent:'archpriest',boost:['luk','hp'],evolve1:[],skill:'神の加護'},
+  shadowMaster:{name:'影の主',icon:'🌒',tier:2,desc:'影から支配する',tags:['agi','luck'],
+    growth:{hp:5,atk:8,def:3,spd:12,luk:8},base:null,parent:'ninja',boost:['spd','atk'],evolve1:[],skill:'影分身'},
+  pirateKing:{name:'海賊王',icon:'⚓',tier:2,desc:'七つの海を制する',tags:['luck','str'],
+    growth:{hp:8,atk:8,def:4,spd:5,luk:12},base:null,parent:'pirate',boost:['luk','atk'],evolve1:[],skill:'七海の王'},
+  beastLord:{name:'獣の王',icon:'🐯',tier:2,desc:'獣の力を宿す',tags:['agi','str'],
+    growth:{hp:7,atk:9,def:4,spd:8,luk:5},base:null,parent:'hunter',boost:['atk','spd'],evolve1:[],skill:'野生の本能'},
+  starGunner:{name:'星砲士',icon:'⭐',tier:2,desc:'星の力で撃つ',tags:['mag','agi'],
+    growth:{hp:5,atk:9,def:3,spd:8,luk:8},base:null,parent:'magicArcher',boost:['atk','spd'],evolve1:[],skill:'星の一矢'},
+};
+const BASE=['swordsman','mage','cleric','thief','archer'];
+// ═══════ SKILL EFFECTS ═══════
+// 各職業スキルの効果定義
+const SKILLS={
+  '斬撃':      {desc:'毎ターン30%でATK×1.5の追加攻撃',   type:'proc',   chance:30, atkMult:1.5},
+  '魔法弾':    {desc:'毎ターン40%でATK×1.8の魔法ダメ',   type:'proc',   chance:40, atkMult:1.8},
+  '回復':      {desc:'毎ターン最大HP8%回復(通常より多め)', type:'healer', bonus:0.08},
+  '急所突き':  {desc:'会心率+15% 常時',                  type:'passive', critBonus:15},
+  '連射':      {desc:'攻撃回数+1 常時',                   type:'passive', extraHit:1},
+  'シールドバッシュ':{desc:'毎ターン25%でスタン（敵ATK半減1ターン）',type:'stun',chance:25},
+  '勇者の一撃':{desc:'毎ターン35%でATK×2.0の特大攻撃',  type:'proc',   chance:35, atkMult:2.0},
+  '全体魔法':  {desc:'毎ターン40%でATK×1.6の全体魔法',   type:'proc',   chance:40, atkMult:1.6},
+  '滅却魔法':  {desc:'毎ターン45%でATK×2.2の滅却魔法',   type:'proc',   chance:45, atkMult:2.2},
+  '聖なる一撃':{desc:'毎ターン30%でATK×1.6＋HP5%回復',  type:'holy',   chance:30, atkMult:1.6, healPct:0.05},
+  '聖域':      {desc:'被ダメ20%軽減＋HP回復量+50% 常時',  type:'passive', dmgReduce:0.2, healBonus:1.5},
+  '分身':      {desc:'回避率+25% 常時',                   type:'passive', dodgeBonus:25},
+  '略奪':      {desc:'撃破時ゴールド+50% 常時',           type:'passive', goldBonus:1.5},
+  '弱点特攻':  {desc:'毎ターン50%でATK×1.7の弱点攻撃',   type:'proc',   chance:50, atkMult:1.7},
+  '魔法矢':    {desc:'毎ターン40%でATK×1.8の魔法矢',      type:'proc',   chance:40, atkMult:1.8},
+  '聖盾':      {desc:'被ダメ30%軽減 常時',                type:'passive', dmgReduce:0.3},
+  '伝説の力':  {desc:'全ステータス+20% 常時',             type:'passive', allStatBonus:1.2},
+  '賢者の石':  {desc:'毎ターン50%でATK×2.0の賢者魔法',   type:'proc',   chance:50, atkMult:2.0},
+  '滅世魔法':  {desc:'毎ターン50%でATK×2.5の滅世魔法',   type:'proc',   chance:50, atkMult:2.5},
+  '神聖剣':    {desc:'毎ターン40%でATK×2.0＋HP8%回復',  type:'holy',   chance:40, atkMult:2.0, healPct:0.08},
+  '神の加護':  {desc:'被ダメ25%軽減＋HP回復+100% 常時',  type:'passive', dmgReduce:0.25, healBonus:2.0},
+  '影分身':    {desc:'回避率+40% ＋ 会心率+20% 常時',    type:'passive', dodgeBonus:40, critBonus:20},
+  '七海の王':  {desc:'毎ターン獲得ゴールド+100% ＋ LUK×2',type:'passive',goldBonus:2.0},
+  '野生の本能':{desc:'毎ターン55%でATK×1.9の野生攻撃',   type:'proc',   chance:55, atkMult:1.9},
+  '星の一矢':  {desc:'毎ターン50%でATK×2.0の星属性攻撃', type:'proc',   chance:50, atkMult:2.0},
+};
+
+const BN={hp:'HP',atk:'ATK',def:'DEF',spd:'SPD',luk:'LUK'};
+const TL={str:'力',mag:'魔',heal:'回',agi:'速',luck:'運'};
+
+const QUESTS=[
+  {id:'q01',name:'スライム退治',icon:'🟢',desc:'村の近くのスライムを退治せよ',rec:1,exp:50,gold:30,rank:1,
+   enemy:{name:'スライム',icon:'🟢',hp:100,atk:14,def:4},drops:['ironSword','leatherShield']},
+  {id:'q02',name:'野ネズミの群れ',icon:'🐀',desc:'農場を荒らすネズミを駆除',rec:3,exp:90,gold:55,rank:1,
+   enemy:{name:'大ネズミ',icon:'🐀',hp:200,atk:22,def:7},drops:['leatherArmor','copperRing','woodBow']},
+  {id:'q03',name:'ゴブリンの巣',icon:'👺',desc:'ゴブリンが村人を襲っている',rec:5,exp:140,gold:80,rank:2,
+   enemy:{name:'ゴブリン',icon:'👺',hp:380,atk:34,def:12},drops:['steelSword','leatherArmor','daggerOfWind']},
+  {id:'q04',name:'呪われた墓地',icon:'💀',desc:'夜に動き出すアンデッドを鎮めよ',rec:7,exp:190,gold:110,rank:2,
+   enemy:{name:'スケルトン',icon:'💀',hp:520,atk:42,def:16},drops:['steelSword','copperRing','boneShield']},
+  {id:'q05',name:'森の狼',icon:'🐺',desc:'山道に出没する狼の群れ',rec:10,exp:260,gold:150,rank:3,
+   enemy:{name:'鋼鉄の狼',icon:'🐺',hp:750,atk:55,def:22},drops:['steelSword','chainMail','hunterBow']},
+  {id:'q06',name:'盗賊団の首領',icon:'🔪',desc:'街道に出没する盗賊の親玉',rec:14,exp:360,gold:200,rank:3,
+   enemy:{name:'盗賊団長',icon:'🔪',hp:1100,atk:72,def:30},drops:['mithrilBlade','chainMail','silverRing','rogueBoots']},
+  {id:'q07',name:'毒沼の蜘蛛女王',icon:'🕷',desc:'沼地を支配する巨大蜘蛛',rec:18,exp:480,gold:270,rank:3,
+   enemy:{name:'蜘蛛女王',icon:'🕷',hp:1600,atk:90,def:38},drops:['mithrilBlade','plateMail','poisonFang']},
+  {id:'q08',name:'地下迷宮の番人',icon:'🏠',desc:'古い遺跡を守るアンデッド',rec:22,exp:650,gold:360,rank:4,
+   enemy:{name:'死霊騎士',icon:'💀',hp:2400,atk:115,def:50},drops:['mithrilBlade','plateMail','soulEdge']},
+  {id:'q09',name:'海の魔物',icon:'🌊',desc:'港を荒らす深海の化け物',rec:28,exp:880,gold:490,rank:4,
+   enemy:{name:'クラーケン',icon:'🦑',hp:3500,atk:145,def:65},drops:['flameSword','plateMail','goldRing','deepSeaRing']},
+  {id:'q10',name:'砂漠の魔獣',icon:'🦂',desc:'砂漠に潜む巨大サソリ',rec:34,exp:1100,gold:620,rank:4,
+   enemy:{name:'砂漠の王',icon:'🦂',hp:5000,atk:180,def:80},drops:['flameSword','chainMail','scorpionClaw']},
+  {id:'q11',name:'火山の守護者',icon:'🌋',desc:'噴火山に潜む炎の巨人',rec:40,exp:1500,gold:850,rank:5,
+   enemy:{name:'炎の巨人',icon:'🔥',hp:7500,atk:225,def:100},drops:['flameSword','dragonArmor','ignisShard']},
+  {id:'q12',name:'魔法塔の狂賢者',icon:'🗼',desc:'暴走した魔法使いを制圧せよ',rec:48,exp:2000,gold:1100,rank:5,
+   enemy:{name:'狂賢者',icon:'🧙',hp:11000,atk:280,def:90},drops:['dragonSword','dragonArmor','rubyRing','arcaneStaff']},
+  {id:'q13',name:'天空城の番兵',icon:'🏯',desc:'雲上に浮かぶ城の守護者たち',rec:56,exp:2700,gold:1500,rank:5,
+   enemy:{name:'天空騎士',icon:'⚔',hp:16000,atk:340,def:115},drops:['dragonSword','angelicArmor','legendRing']},
+  {id:'q14',name:'古代竜の住処',icon:'🐉',desc:'山頂に君臨する伝説の古龍',rec:65,exp:3600,gold:2000,rank:6,
+   enemy:{name:'古代竜',icon:'🐉',hp:24000,atk:420,def:140},drops:['dragonSword','angelicArmor','legendRing','dragonFang']},
+  {id:'q15',name:'冥界への門',icon:'🌑',desc:'死者の国への入り口を守る番人',rec:74,exp:5000,gold:2800,rank:6,
+   enemy:{name:'冥界の門番',icon:'🌑',hp:38000,atk:520,def:170},drops:['voidSword','godArmor','voidRing','demonCore']},
+  {id:'q16',name:'魔王城への侵攻',icon:'🏰',desc:'全ての元凶、魔王を倒せ',rec:84,exp:7000,gold:4000,rank:6,
+   enemy:{name:'魔王',icon:'👹',hp:60000,atk:650,def:200},drops:['voidSword','godArmor','legendRing','demonCore']},
+  {id:'q17',name:'神域の守護者',icon:'🌟',desc:'神の領域に踏み込んだ者を試す存在',rec:95,exp:10000,gold:6000,rank:7,
+   enemy:{name:'神域の番人',icon:'🌟',hp:100000,atk:800,def:250},drops:['voidSword','godArmor','chaosCore','voidRing']},
+  {id:'q18',name:'虚無の番人',icon:'🕳',desc:'世界の果て、存在の限界に潜む者',rec:110,exp:15000,gold:10000,rank:7,
+   enemy:{name:'虚無の主',icon:'🕳',hp:180000,atk:1100,def:340},drops:['voidSword','godArmor','chaosCore','primordialCore']},
+];
+
+// ═══════ BOSS CHALLENGES ═══════
+const BOSSES=[
+  {id:'b01',name:'暴食の魔将ガルム',icon:'🐗',rec:12,
+   desc:'七大魔将の一角。圧倒的な体力で押しつぶす。',
+   enemy:{name:'ガルム',icon:'🐗',hp:8000,atk:120,def:40,special:'3ターンに1回全体攻撃×1.5'},
+   title:'魔将討伐者',titleDesc:'暴食の魔将ガルムを討伐した勇者',
+   bossDrops:['huntersEdge','guardianShield'],
+   reward:{exp:3000,gold:1500}},
+  {id:'b02',name:'嫉妬の魔将レヴィア',icon:'🌊',rec:22,
+   desc:'海を支配する嫉妬の魔将。毒と麻痺で翻弄する。',
+   enemy:{name:'レヴィア',icon:'🌊',hp:20000,atk:200,def:65,special:'毎ターン自動回復+150'},
+   title:'海魔討伐者',titleDesc:'嫉妬の魔将レヴィアを討伐した勇者',
+   bossDrops:['abyssalBlade','seaKingArmor'],
+   reward:{exp:8000,gold:4000}},
+  {id:'b03',name:'傲慢の魔将ルシファ',icon:'🔥',rec:36,
+   desc:'炎を操る傲慢の魔将。あらゆる攻撃を凌駕する。',
+   enemy:{name:'ルシファ',icon:'🔥',hp:50000,atk:350,def:110,special:'毎ターンATK+20上昇'},
+   title:'炎魔討伐者',titleDesc:'傲慢の魔将ルシファを討伐した勇者',
+   bossDrops:['infernoSword','phoenixArmor','armageddonRing'],
+   reward:{exp:20000,gold:10000}},
+  {id:'b04',name:'時の番人クロノス',icon:'⏳',rec:50,
+   desc:'時間を操る古の番人。過去と未来を同時に攻撃する。',
+   enemy:{name:'クロノス',icon:'⏳',hp:100000,atk:450,def:140,special:'3ターンに1回2連撃・ATK+15上昇'},
+   title:'時の征服者',titleDesc:'時の番人クロノスを打ち破った者',
+   bossDrops:['timeReaperBlade','eternityRing'],
+   reward:{exp:40000,gold:20000}},
+  {id:'b05',name:'天魔王ゼロス',icon:'👿',rec:65,
+   desc:'七大魔将を束ねる天魔王。全ての属性を無効化する。',
+   enemy:{name:'ゼロス',icon:'👿',hp:200000,atk:600,def:180,special:'会心無効・回避無効・3ターンに1回全体攻撃'},
+   title:'天魔王討伐者',titleDesc:'天魔王ゼロスを討伐した伝説の勇者',
+   bossDrops:['godSlayer','celestialArmor','eternityRing'],
+   reward:{exp:80000,gold:40000}},
+  {id:'b06',name:'深淵竜ヴォラクス',icon:'🐲',rec:80,
+   desc:'深淵から来た漆黒の竜。全てを飲み込む闇の息吹を持つ。',
+   enemy:{name:'ヴォラクス',icon:'🐲',hp:400000,atk:800,def:220,special:'毎ターンHP3%回復・毎ターンATK+30上昇'},
+   title:'深淵竜討伐者',titleDesc:'深淵竜ヴォラクスを討伐した英雄',
+   bossDrops:['abyssalBlade','godlikeArmor','cosmicRing'],
+   reward:{exp:160000,gold:80000}},
+  {id:'b07',name:'魔神王アバドン',icon:'👁',rec:95,
+   desc:'神と魔の両方を超越した存在。この世の終わりをもたらす者。',
+   enemy:{name:'アバドン',icon:'👁',hp:800000,atk:1100,def:280,special:'毎ターンHP5%回復・会心無効・ATK+40上昇'},
+   title:'魔神王討伐者',titleDesc:'魔神王アバドンを打ち破った超越者',
+   bossDrops:['divineSword','godlikeArmor','primordialCore'],
+   reward:{exp:350000,gold:150000}},
+  {id:'b08',name:'創世神イグドラ',icon:'🌌',rec:110,
+   desc:'世界の創造主。この戦いに勝利した者は真の英雄。',
+   enemy:{name:'イグドラ',icon:'🌌',hp:2000000,atk:1500,def:350,special:'毎ターンHP5%回復・全能力上昇・会心無効'},
+   title:'神殺し',titleDesc:'創世神イグドラを打ち破った真の英雄',
+   bossDrops:['divineSword','godlikeArmor','cosmicRing','primordialCore'],
+   reward:{exp:1000000,gold:500000}},
+];
+
+// ═══════ ITEMS ═══════
+const ITEMS={
+  // ショップ品 (クエスト進行で解放)
+  ironSword:      {name:'鉄の剣',         icon:'⚔',slot:'weapon',rarity:'common',    atk:8,  def:0, spd:0, luk:0,        price:100,  shop:true, shopReq:0},
+  copperRing:     {name:'銅の指輪',       icon:'💍',slot:'acc',   rarity:'common',    atk:0,  def:0, spd:3, luk:4,        price:80,   shop:true, shopReq:0},
+  leatherArmor:   {name:'革の鎧',         icon:'🥋',slot:'armor', rarity:'common',    atk:0,  def:8, spd:0, luk:0, hp:30, price:90,   shop:true, shopReq:0},
+  steelSword:     {name:'鋼の剣',         icon:'🔪',slot:'weapon',rarity:'uncommon',  atk:18, def:0, spd:2, luk:0,        price:320,  shop:true, shopReq:3},
+  chainMail:      {name:'チェインメイル', icon:'⛓️',slot:'armor', rarity:'uncommon',  atk:0,  def:18,spd:-1,luk:0, hp:80, price:280,  shop:true, shopReq:3},
+  silverRing:     {name:'銀の指輪',       icon:'💎',slot:'acc',   rarity:'uncommon',  atk:5,  def:5, spd:5, luk:8,        price:250,  shop:true, shopReq:3},
+  mithrilBlade:   {name:'ミスリル剣',     icon:'💙',slot:'weapon',rarity:'rare',      atk:32, def:0, spd:3, luk:0,        price:800,  shop:true, shopReq:6},
+  plateMail:      {name:'プレートメイル', icon:'🔰',slot:'armor', rarity:'rare',      atk:0,  def:32,spd:-1,luk:0, hp:160,price:750,  shop:true, shopReq:6},
+  goldRingShop:   {name:'黄金の指輪',     icon:'🏅',slot:'acc',   rarity:'rare',      atk:8,  def:8, spd:8, luk:12,       price:700,  shop:true, shopReq:6},
+  crystalSword:   {name:'クリスタル剣',   icon:'🔷',slot:'weapon',rarity:'epic',      atk:52, def:5, spd:5, luk:5,        price:2000, shop:true, shopReq:10},
+  mythrilArmor:   {name:'ミスリル鎧',     icon:'🛡',slot:'armor', rarity:'epic',      atk:0,  def:55,spd:3, luk:0, hp:280,price:1800, shop:true, shopReq:10},
+  starlightRing:  {name:'星光の指輪',     icon:'⭐',slot:'acc',   rarity:'epic',      atk:15, def:15,spd:15,luk:20,       price:1600, shop:true, shopReq:10},
+  shadowBlade:    {name:'影の刃',         icon:'🌑',slot:'weapon',rarity:'legendary', atk:85, def:10,spd:12,luk:8,        price:5000, shop:true, shopReq:14},
+  dragonScale:    {name:'竜鱗の大鎧',     icon:'🟠',slot:'armor', rarity:'legendary', atk:0,  def:90,spd:3, luk:5, hp:500,price:4500, shop:true, shopReq:14},
+  omegaRing:      {name:'オメガリング',   icon:'🌀',slot:'acc',   rarity:'legendary', atk:25, def:25,spd:25,luk:35,       price:4000, shop:true, shopReq:14},
+  // クエストドロップ
+  leatherShield:  {name:'革の盾',         icon:'🟤',slot:'armor', rarity:'common',    atk:0,  def:10,spd:0, luk:0, hp:40, price:0, rank:1},
+  woodBow:        {name:'木の弓',         icon:'🏹',slot:'weapon',rarity:'common',    atk:10, def:0, spd:3, luk:0,        price:0, rank:1},
+  boneShield:     {name:'骨の盾',         icon:'🦴',slot:'armor', rarity:'uncommon',  atk:0,  def:14,spd:0, luk:2, hp:60, price:0, rank:2},
+  daggerOfWind:   {name:'風のダガー',     icon:'🌪️',slot:'weapon',rarity:'uncommon',  atk:20, def:0, spd:10,luk:0,        price:0, rank:2, special:'SPD+10'},
+  hunterBow:      {name:'狩人の弓',       icon:'🦅',slot:'weapon',rarity:'uncommon',  atk:24, def:0, spd:6, luk:6,        price:0, rank:2, special:'LUK+6'},
+  poisonFang:     {name:'毒牙の短剣',     icon:'☠️',slot:'weapon',rarity:'rare',      atk:30, def:0, spd:8, luk:5,        price:0, rank:3, special:'毎ターン敵HP-4%'},
+  rogueBoots:     {name:'盗賊のブーツ',   icon:'👟',slot:'acc',   rarity:'rare',      atk:0,  def:0, spd:18,luk:8,        price:0, rank:3, special:'回避+20%'},
+  soulEdge:       {name:'魂喰らい',       icon:'🔴',slot:'weapon',rarity:'rare',      atk:38, def:0, spd:5, luk:0,        price:0, rank:3, special:'毎ターン敵HP-3%'},
+  scorpionClaw:   {name:'サソリの大爪',   icon:'🦂',slot:'weapon',rarity:'epic',      atk:58, def:8, spd:6, luk:0,        price:0, rank:4, special:'会心率+12%'},
+  flameSword:     {name:'炎の剣',         icon:'🔥',slot:'weapon',rarity:'epic',      atk:65, def:0, spd:5, luk:0,        price:0, rank:4, special:'炎属性+15%'},
+  dragonArmor:    {name:'竜鱗の鎧',       icon:'🟠',slot:'armor', rarity:'epic',      atk:0,  def:62,spd:0, luk:0, hp:300,price:0, rank:4, special:'被ダメ-10%'},
+  deepSeaRing:    {name:'深海の指輪',     icon:'🌊',slot:'acc',   rarity:'rare',      atk:8,  def:12,spd:8, luk:14,       price:0, rank:4, special:'会心率+10%'},
+  ignisShard:     {name:'炎晶の欠片',     icon:'💎',slot:'acc',   rarity:'epic',      atk:18, def:8, spd:8, luk:12,       price:0, rank:4, special:'ATK×1.1'},
+  goldRing:       {name:'黄金の指輪',     icon:'🏅',slot:'acc',   rarity:'rare',      atk:10, def:10,spd:10,luk:12,       price:0, rank:4},
+  dragonSword:    {name:'竜殺しの剣',     icon:'🐲',slot:'weapon',rarity:'epic',      atk:88, def:8, spd:8, luk:0,        price:0, rank:5, special:'竜特攻+50%'},
+  angelicArmor:   {name:'天使の鎧',       icon:'👼',slot:'armor', rarity:'epic',      atk:0,  def:80,spd:8, luk:12,hp:450,price:0, rank:5, special:'毎ターン自動回復'},
+  rubyRing:       {name:'ルビーの指輪',   icon:'♦️',slot:'acc',   rarity:'rare',      atk:15, def:8, spd:8, luk:15,       price:0, rank:5},
+  arcaneStaff:    {name:'魔導の杖',       icon:'🪄',slot:'weapon',rarity:'epic',      atk:95, def:0, spd:6, luk:12,       price:0, rank:5, special:'魔法ダメ+20%'},
+  legendRing:     {name:'伝説の指輪',     icon:'🌟',slot:'acc',   rarity:'epic',      atk:22, def:22,spd:22,luk:30,hp:200,price:0, rank:5, special:'全ステ+20'},
+  dragonFang:     {name:'竜の牙',         icon:'🦷',slot:'acc',   rarity:'legendary', atk:25, def:12,spd:18,luk:18,       price:0, rank:5, special:'会心率+15%'},
+  voidSword:      {name:'虚無の剣',       icon:'🌑',slot:'weapon',rarity:'legendary', atk:120,def:12,spd:12,luk:0,        price:0, rank:6, special:'無属性貫通'},
+  godArmor:       {name:'神の鎧',         icon:'🌟',slot:'armor', rarity:'legendary', atk:0,  def:110,spd:8,luk:22,hp:800,price:0, rank:6, special:'ダメ-15%＋自動回復'},
+  voidRing:       {name:'虚無の指輪',     icon:'🕳️',slot:'acc',  rarity:'legendary', atk:30, def:30,spd:30,luk:45,hp:300,price:0, rank:6, special:'全ステ+30'},
+  demonCore:      {name:'魔核',           icon:'💜',slot:'acc',   rarity:'legendary', atk:38, def:15,spd:15,luk:22,       price:0, rank:6, special:'ATK×1.15'},
+  chaosCore:      {name:'混沌の核',       icon:'🌀',slot:'acc',   rarity:'legendary', atk:45, def:30,spd:30,luk:30,       price:0, rank:6, special:'全ステ×1.1'},
+  primordialCore: {name:'原初の核',       icon:'🌀',slot:'acc',   rarity:'bossonly',  atk:80, def:55,spd:55,luk:55,       price:0,         special:'全ステ×1.2・ATK×1.4'},
+  // ボスドロップ専用
+  huntersEdge:    {name:'狩猟の覇刃',     icon:'🔪',slot:'weapon',rarity:'bossonly',  atk:110,def:12,spd:15,luk:12,       price:0, special:'会心ダメ×2.5・SPD依存ダメ+'},
+  guardianShield: {name:'守護の大盾',     icon:'🔰',slot:'armor', rarity:'bossonly',  atk:8,  def:120,spd:8,luk:15,hp:700,price:0, special:'被ダメ-20%・毎ターン自動回復'},
+  abyssalBlade:   {name:'深淵の魔剣',     icon:'🌊',slot:'weapon',rarity:'bossonly',  atk:135,def:15,spd:12,luk:0,        price:0, special:'毎ターン敵HP-5%・魂喰らい強化'},
+  seaKingArmor:   {name:'海王の鎧',       icon:'🌀',slot:'armor', rarity:'bossonly',  atk:0,  def:135,spd:15,luk:18,hp:850,price:0, special:'ダメ-18%・毎ターン自動回復'},
+  infernoSword:   {name:'業火の覇剣',     icon:'🔥',slot:'weapon',rarity:'bossonly',  atk:165,def:18,spd:15,luk:8,        price:0, special:'炎ダメ+30%・ATK×1.2'},
+  phoenixArmor:   {name:'不死鳥の鎧',     icon:'🦅',slot:'armor', rarity:'bossonly',  atk:12, def:150,spd:12,luk:22,hp:950,price:0, special:'ダメ-15%・自動回復強化'},
+  armageddonRing: {name:'終焉の指輪',     icon:'🔴',slot:'acc',   rarity:'bossonly',  atk:45, def:30,spd:30,luk:38,       price:0, special:'全ステ+35・会心率+20%'},
+  timeReaperBlade:{name:'時縛の鎌',       icon:'⏳',slot:'weapon',rarity:'bossonly',  atk:180,def:20,spd:20,luk:15,       price:0, special:'3ターン毎に2連撃・ATK×1.15'},
+  godSlayer:      {name:'神殺しの剣',     icon:'⚡',slot:'weapon',rarity:'bossonly',  atk:225,def:30,spd:22,luk:15,       price:0, special:'神属性貫通・ATK×1.3'},
+  celestialArmor: {name:'天界の鎧',       icon:'☁️',slot:'armor', rarity:'bossonly',  atk:15, def:195,spd:18,luk:30,hp:1200,price:0,special:'ダメ-25%・自動回復大'},
+  eternityRing:   {name:'永遠の指輪',     icon:'💫',slot:'acc',   rarity:'bossonly',  atk:60, def:45,spd:45,luk:60,hp:400,price:0, special:'全ステ+50・会心率+25%'},
+  divineSword:    {name:'神聖剣ガイア',   icon:'🌌',slot:'weapon',rarity:'bossonly',  atk:300,def:45,spd:30,luk:30,       price:0, special:'全属性貫通・ATK×1.5・会心×3'},
+  godlikeArmor:   {name:'神格の鎧',       icon:'🌟',slot:'armor', rarity:'bossonly',  atk:30, def:270,spd:22,luk:45,hp:1600,price:0,special:'ダメ-30%・完全自動回復'},
+  cosmicRing:     {name:'宇宙の指輪',     icon:'🌠',slot:'acc',   rarity:'bossonly',  atk:75, def:75,spd:75,luk:90,hp:700,price:0, special:'全ステ+70・会心率+30%'},
+};
+const RL={common:'コモン',uncommon:'アンコモン',rare:'レア',epic:'エピック',legendary:'レジェンダリー',bossonly:'ボスドロップ'};
+
+// ═══════ STATE ═══════
+let P=null, curScreen='title';
+
+function newPlayer(name,classId){
+  const cls=CT[classId],base=cls.base;
+  return{name,classId,level:1,exp:0,expNext:50,
+    hp:base.hp,maxHp:base.hp,
+    coins:100,
+    stats:{hp:base.hp,atk:base.atk,def:base.def,spd:base.spd,luk:base.luk},
+    freePoints:0,
+    equipped:{weapon:null,armor:null,acc:null},
+    inventory:[],
+    cleared:[],bossCleared:[],
+    titles:[],activeTitle:null,
+    lastQuest:null,
+    lastBoss:null,
+    lastQuestTime:0};
+}
+
+// 実効ステータス（装備+強化込み）
+function getStats(){
+  const s={...P.stats};
+  let hpBonus=0;
+  for(const sl of['weapon','armor','acc']){
+    const eqId=P.equipped[sl];
+    if(!eqId)continue;
+    const entry=P.inventory.find(x=>x.id===eqId);
+    const it=ITEMS[eqId];
+    if(!it)continue;
+    const eLv=entry?entry.enhLv||0:0;
+    const mult=1+eLv*0.08;
+    for(const k of['atk','def','spd','luk'])if(it[k])s[k]=(s[k]||0)+Math.floor(it[k]*mult);
+    if(it.hp)hpBonus+=Math.floor(it.hp*mult);
+  }
+  s.maxHp=(P.maxHp||P.stats.hp*3)+hpBonus;
+  return s;
+}
+function getCls(){return CT[P.classId];}
+
+// ステポイント振り
+function allocStat(key,delta){
+  if(delta>0&&P.freePoints<=0)return;
+  const cls=getCls();
+  const boosted=cls.boost&&cls.boost.includes(key);
+  const gain=boosted?2*delta:delta;
+  const minV=CT[P.classId].base?.[key]??1;
+  if(delta<0&&P.stats[key]<=minV)return;
+  P.stats[key]+=gain;
+  if(key==='hp'){P.maxHp+=gain*3;P.hp=Math.min(P.hp,P.maxHp);}
+  P.freePoints-=delta;
+  updateTopbar();renderStatus();
+}
+
+// クールダウン管理（5秒に1回クエスト可能）
+const QUEST_CD=5000; // 5秒
+setInterval(()=>{
+  if(!P)return;
+  updateTopbar();
+  // battle中は再描画しない（バトル画面が消えるバグ防止）
+  if(curScreen==='quest')renderQuest();
+  else if(curScreen==='boss')renderBoss();
+},500);
+
+// ═══════ SAVE/LOAD ═══════
+const SK='cof2_';
+function saveGame(slot){
+  if(!P)return;
+  localStorage.setItem(SK+slot,JSON.stringify({P,ts:Date.now()}));
+  toast(`スロット${slot}にセーブ完了`);
+}
+function loadGame(slot){
+  const raw=localStorage.getItem(SK+slot);
+  if(!raw){toast('セーブデータなし');return;}
+  P=JSON.parse(raw).P;
+  // 古いデータ互換性（inventory形式）
+  if(P.inventory.length&&typeof P.inventory[0]==='string'){
+    P.inventory=P.inventory.map(id=>({id,enhLv:0,fav:false}));
+  }
+  if(!P.bossCleared)P.bossCleared=[];
+  if(!P.titles)P.titles=[];
+  if(!P.activeTitle)P.activeTitle=null;
+  if(!P.lastQuestTime)P.lastQuestTime=0;
+  if(!P.lastQuest)P.lastQuest=null;
+  if(!P.lastBoss)P.lastBoss=null;
+  if(P.stamina===undefined)P.stamina=10;
+  if(P.maxStamina===undefined)P.maxStamina=10;
+  if(P.maxHp===undefined)P.maxHp=P.stats.hp*3;
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('nav').style.display='grid';
+  updateTopbar();go('status');toast(`スロット${slot}からロード完了`);
+}
+function getSaveInfo(slot){
+  const raw=localStorage.getItem(SK+slot);
+  if(!raw)return null;
+  const d=JSON.parse(raw),dt=new Date(d.ts);
+  return{name:d.P.name,cls:CT[d.P.classId]?.name||'?',lv:d.P.level,
+    date:`${dt.getMonth()+1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2,'0')}`};
+}
+function delSave(slot){
+  if(!confirm(`スロット${slot}を削除しますか？`))return;
+  localStorage.removeItem(SK+slot);renderTitle();
+}
+
+// ═══════ EQUIP HELPERS ═══════
+function invFind(id){return P.inventory.find(x=>x.id===id);}
+function invFindSlot(slot){return P.inventory.find(x=>x.id===P.equipped[slot]);}
+function isEquipped(id){return Object.values(P.equipped).includes(id);}
+function isFav(id){const e=invFind(id);return e&&e.fav;}
+
+function autoEquip(){
+  let cnt=0;
+  for(const slot of['weapon','armor','acc']){
+    const cands=[...new Set(P.inventory.filter(x=>ITEMS[x.id]?.slot===slot).map(x=>x.id))];
+    if(!cands.length)continue;
+    const score=id=>{
+      const it=ITEMS[id],entry=invFind(id);
+      const m=1+(entry?.enhLv||0)*0.05;
+      return(it.atk||0)*m+(it.def||0)*m+(it.spd||0)*m+(it.luk||0)*m;
+    };
+    const best=cands.sort((a,b)=>score(b)-score(a))[0];
+    if(P.equipped[slot]!==best){P.equipped[slot]=best;cnt++;}
+  }
+  updateTopbar();renderEquip();
+  toast(cnt>0?`${cnt}箇所を最強装備に変更！`:'すでに最強装備です');
+}
+
+function sellBulk(){
+  const before=P.inventory.length;
+  const sold=[];
+  P.inventory=P.inventory.filter(entry=>{
+    if(isEquipped(entry.id)||entry.fav)return true;
+    sold.push(entry);return false;
+  });
+  let gain=0;
+  sold.forEach(entry=>{gain+=Math.max(10,Math.floor((ITEMS[entry.id]?.price||80)*0.4));});
+  P.coins+=gain;
+  updateTopbar();renderEquip();
+  toast(`${sold.length}件を一括売却 +${gain}G`);
+}
+
+function toggleFav(id){
+  const entry=invFind(id);
+  if(!entry)return;
+  entry.fav=!entry.fav;
+  renderEquip();
+  toast(entry.fav?'お気に入りに追加':'お気に入りを解除');
+}
+
+function enhanceItem(id){
+  const entry=invFind(id);
+  if(!entry)return;
+  entry.enhLv=(entry.enhLv||0);
+  const cost=enhanceCost(id,entry.enhLv);
+  if(P.coins<cost){toast('ゴールドが足りません！');return;}
+  P.coins-=cost;entry.enhLv++;
+  updateTopbar();renderEquip();
+  toast(`${ITEMS[id].name} を+${entry.enhLv}に強化！`);
+}
+
+function enhanceCost(id,currentLv){
+  const it=ITEMS[id];
+  const base={common:20,uncommon:60,rare:150,epic:400,legendary:1200,bossonly:3000}[it.rarity]||80;
+  return Math.floor(base*Math.pow(1.3,currentLv));
+}
+
+// ═══════ NAVIGATION ═══════
+function go(id){
+  curScreen=id;
+  // ゲーム開始後は常にnav/topbar表示
+  document.getElementById('nav').style.display='grid';
+  document.getElementById('topbar').style.display='flex';
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('active',b.dataset.s===id));
+  ({status:renderStatus,quest:renderQuest,equip:renderEquip,shop:renderShop,boss:renderBoss,class:renderClass})[id]?.();
+}
+function updateTopbar(){
+  if(!P)return;
+  const cls=getCls();
+  document.getElementById('char-icon').textContent=cls.icon;
+  document.getElementById('char-name').textContent=P.name;
+  document.getElementById('char-class-lv').textContent=`Lv.${P.level} ${cls.name}`;
+  const titleEl=document.getElementById('title-tag');
+  if(P.activeTitle){titleEl.textContent=`【${P.activeTitle}】`;titleEl.style.display='block';}
+  else titleEl.style.display='none';
+  const es2=getStats?getStats():P.stats;
+  const displayHp=P.hp;
+  const displayMaxHp=es2.maxHp||P.maxHp;
+  document.getElementById('tsf-hp').style.width=(displayHp/displayMaxHp*100)+'%';
+  const now2=Date.now();
+  const cdElapsed=now2-(P.lastQuestTime||0);
+  const cdPct=Math.min(100,cdElapsed/QUEST_CD*100);
+  document.getElementById('tsf-st').style.width=cdPct+'%';
+  document.getElementById('top-coins').textContent=P.coins.toLocaleString();
+}
+
+// ═══════ TITLE ═══════
+function renderTitle(){
+  document.getElementById('topbar').style.display='none';
+  document.getElementById('nav').style.display='none';
+  const saves=[1,2,3].map(s=>{
+    const info=getSaveInfo(s);
+    if(!info)return`<div class="save-slot">
+      <div class="save-slot-name" style="color:var(--text3);">空きスロット ${s}</div>
+      <div class="save-slot-info">新規ゲーム</div>
+      <div style="margin-top:6px;"><button class="btn btn-blue btn-sm btn-full" onclick="renderCreate(${s})">新規作成</button></div>
+    </div>`;
+    return`<div class="save-slot">
+      <div class="save-slot-name">${info.name} <span style="font-size:9px;color:var(--text3);">[${s}]</span></div>
+      <div class="save-slot-info">${info.cls} Lv.${info.lv} — ${info.date}</div>
+      <div style="display:flex;gap:4px;margin-top:6px;">
+        <button class="btn btn-gold btn-sm" style="flex:1;" onclick="loadGame(${s})">続きから</button>
+        <button class="btn btn-ghost btn-xs" onclick="renderCreate(${s})">上書き</button>
+        <button class="btn btn-red btn-xs" onclick="delSave(${s})">削除</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('content').innerHTML=`
+    <div id="screen-title">
+      <div class="game-logo">Chronicles<br>of Fate</div>
+      <div class="game-sub">Browser RPG</div>
+      <div style="width:100%;max-width:340px;">${saves}</div>
+    </div>`;
+}
+
+let cName='',cClass='',cSlot=1;
+function renderCreate(slot=1){
+  cSlot=slot;
+  document.getElementById('content').innerHTML=`
+    <div style="padding:6px 0;">
+      <div class="panel"><div class="pt">⚔ 冒険者の名前</div>
+        <input type="text" placeholder="名前を入力..." maxlength="12" value="${cName}" oninput="cName=this.value">
+      </div>
+      <div class="panel"><div class="pt">🎭 職業を選ぶ</div>
+        <div class="class-grid">
+          ${BASE.map(id=>{
+            const cls=CT[id],sel=cClass===id?' sel':'';
+            return`<div class="cc${sel}" onclick="cClass='${id}';renderCreate(${slot})">
+              <div class="ci">${cls.icon}</div><div class="cn">${cls.name}</div>
+              <div class="cd">${cls.desc}</div>
+              <div class="tags">${cls.tags.map(t=>`<span class="tag tag-${t}">${TL[t]}</span>`).join('')}</div>
+              <div style="margin-top:3px;font-size:7px;color:var(--gold2);">✦ ${cls.boost.map(b=>BN[b]).join('・')}が得意</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <button class="btn btn-gold btn-full" onclick="startGame()" ${(!cName.trim()||!cClass)?'disabled':''}>冒険を開始する →</button>
+    </div>`;
+}
+function startGame(){
+  if(!cName.trim()||!cClass)return;
+  P=newPlayer(cName.trim(),cClass);
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('nav').style.display='grid';
+  updateTopbar();go('status');toast('冒険を始めよう！');
+}
+
+// ═══════ STATUS ═══════
+function renderStatus(){
+  const cls=getCls(),es=getStats(),epct=Math.round(P.exp/P.expNext*100);
+  const boosted=cls.boost||[];
+  const titlesHtml=P.titles&&P.titles.length?`
+    <div class="panel"><div class="pt">🏆 称号</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${P.titles.map(t=>`<span class="title-badge" style="cursor:pointer;${P.activeTitle===t?'border-color:var(--gold);color:var(--gold);':''}" onclick="setTitle('${t}')">${t}</span>`).join('')}
+      </div>
+      <div style="font-size:9px;color:var(--text3);margin-top:5px;">タップで称号を切り替え</div>
+    </div>`:'';
+
+  document.getElementById('content').innerHTML=`
+    <div class="panel">
+      <div class="pt">👤 キャラクター</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;">
+        <div style="font-size:44px;">${cls.icon}</div>
+        <div style="flex:1;">
+          <div style="font-family:'Cinzel',serif;font-size:15px;color:var(--gold2);margin-bottom:1px;">${P.name}</div>
+          <div style="font-size:10px;color:var(--text2);">Lv.${P.level} ${cls.name}</div>
+          <div style="font-size:9px;color:var(--purple2);margin-top:1px;">スキル: ${cls.skill}</div>
+          ${SKILLS[cls.skill]?`<div style="font-size:8px;color:var(--cyan2);margin-top:2px;background:rgba(34,192,216,.08);padding:3px 5px;border-radius:4px;">⚡ ${SKILLS[cls.skill].desc}</div>`:''}
+          ${P.activeTitle?`<div style="font-size:9px;color:var(--purple3);margin-top:1px;">【${P.activeTitle}】</div>`:''}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;font-weight:700;color:var(--gold2);">💰${P.coins.toLocaleString()}</div>
+        </div>
+      </div>
+      <div class="erow">
+        <div class="elbl"><span>EXP</span><span>${P.exp}/${P.expNext}</span></div>
+        <div class="etrk"><div class="efil" style="width:${epct}%"></div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="pt">📊 ステータス ${P.freePoints>0?`<span style="color:var(--red2);font-size:9px;margin-left:3px;">+${P.freePoints}P振れます</span>`:''}</div>
+      ${P.freePoints>0?`<div class="info-box">✦ <b>${boosted.map(b=>BN[b]).join('・')}</b> は得意ステータス（1Pで+2）<br>💨SPD強化→連続攻撃増加　🍀LUK強化→ドロップ率・会心率UP</div>`:''}
+      ${[
+        {key:'hp', icon:'❤️',name:'HP', bar:'sbf-hp', cur:getStats().maxHp||P.maxHp},
+        {key:'atk',icon:'⚔',name:'ATK',bar:'sbf-atk',cur:es.atk},
+        {key:'def',icon:'🔰',name:'DEF',bar:'sbf-def',cur:es.def},
+        {key:'spd',icon:'💨',name:'SPD',bar:'sbf-spd',cur:es.spd},
+        {key:'luk',icon:'🍀',name:'LUK',bar:'sbf-luk',cur:es.luk},
+      ].map(r=>{
+        const pct=Math.min(100,r.cur/5);
+        const isBst=boosted.includes(r.key);
+        const eq=r.key!=='hp'&&r.cur!==P.stats[r.key];
+        return`<div class="sr">
+          <span class="si">${r.icon}</span><span class="sn">${r.name}</span>
+          <div class="sbw"><div class="sbf ${r.bar}" style="width:${pct}%"></div></div>
+          <span class="sv">${r.cur}${eq?`<span style="font-size:7px;color:var(--green2)">↑</span>`:''}</span>
+          ${isBst?`<span class="boost-badge">×2</span>`:`<span style="width:18px;flex-shrink:0;"></span>`}
+          ${P.freePoints>0?`<div class="sbtn-row">
+            <button class="sadj" onclick="allocStat('${r.key}',-1)">−</button>
+            <button class="sadj" onclick="allocStat('${r.key}',1)" style="${isBst?'color:var(--gold2);border-color:var(--gold);':''}">+</button>
+          </div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+    ${titlesHtml}
+    <div class="panel"><div class="pt">💾 セーブ</div>
+      <div style="display:flex;gap:4px;">
+        ${[1,2,3].map(s=>`<button class="btn btn-blue btn-sm" style="flex:1;" onclick="saveGame(${s})">Slot${s}</button>`).join('')}
+      </div>
+    </div>`;
+}
+
+function setTitle(t){
+  P.activeTitle=P.activeTitle===t?null:t;
+  updateTopbar();renderStatus();
+}
+
+// ═══════ QUEST ═══════
+function renderQuest(){
+  const now=Date.now();
+  const cdElapsed=now-(P.lastQuestTime||0);
+  const cdLeft=Math.max(0,Math.ceil((QUEST_CD-cdElapsed)/1000));
+  const cdReady=cdElapsed>=QUEST_CD;
+  const cdPct=Math.min(100,cdElapsed/QUEST_CD*100);
+
+  // 最近行ったクエストを取得
+  const lastQ=P.lastQuest?QUESTS.find(q=>q.id===P.lastQuest):null;
+
+  const questCard=(q,i,isPinned)=>{
+    const cleared=P.cleared.includes(q.id);
+    const locked=!isPinned&&i>0&&!P.cleared.includes(QUESTS[i-1].id);
+    const under=P.level<q.rec-3;
+    const onclickStr=locked?'':(cdReady?`startQuest('${q.id}')`:`toast('クールダウン中！ あと${cdLeft}秒')`);
+    return`<div class="qcard${locked?' locked':''}" onclick="${onclickStr}" style="${isPinned?'border-color:var(--gold2);background:rgba(232,184,76,.05);':''}">
+      <div class="qi">${q.icon}</div>
+      <div class="qinfo">
+        <div class="qname">${isPinned?'⭐ ':''}${q.name}</div>
+        <div class="qdesc">${q.desc}</div>
+        <div class="qmeta">
+          <span class="qrec" style="${under?'color:var(--red2);font-weight:700;':''}">推奨Lv.${q.rec}${under?'⚠':''}</span>
+          <span class="qrew">EXP+${q.exp} 💰+${q.gold}</span>
+        </div>
+      </div>
+      <span class="qbadge ${cleared?'b-clear':locked?'b-lock':'b-new'}">${cleared?'CLEAR':locked?'LOCK':'NEW'}</span>
+    </div>`;
+  };
+
+  document.getElementById('content').innerHTML=`
+    <div class="panel"><div class="pt">⏱ クエストクールダウン</div>
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:3px;">
+        <div style="flex:1;height:8px;background:rgba(0,0,0,.4);border-radius:4px;overflow:hidden;">
+          <div style="height:100%;width:${cdPct}%;background:${cdReady?'linear-gradient(90deg,#20a050,#40d070)':'linear-gradient(90deg,#b08020,#f0b030)'};border-radius:4px;transition:width .3s;"></div>
+        </div>
+        <span style="font-size:11px;color:${cdReady?'var(--green2)':'var(--stamina)'};font-weight:700;">${cdReady?'GO！':cdLeft+'秒'}</span>
+      </div>
+      <div style="font-size:8px;color:var(--text3);">5秒に1回クエストに挑戦できます</div>
+    </div>
+    ${lastQ?`<div class="panel" style="border-color:rgba(232,184,76,.4);padding:7px 10px;">
+      <div style="font-size:8px;color:var(--gold2);margin-bottom:4px;">⭐ 最近のクエスト</div>
+      ${questCard(lastQ, QUESTS.indexOf(lastQ), true)}
+    </div>`:''}
+    <div class="panel"><div class="pt">📜 クエスト一覧</div>
+      ${QUESTS.map((q,i)=>questCard(q,i,false)).join('')}
+    </div>`;
+}
+
+// ═══════ BATTLE ENGINE (共通) ═══════
+function startQuest(questId){
+  const q=QUESTS.find(x=>x.id===questId);
+  if(!q)return;
+  const now=Date.now();
+  if(now-(P.lastQuestTime||0)<QUEST_CD){toast('クールダウン中！ あと'+(Math.ceil((QUEST_CD-(now-(P.lastQuestTime||0)))/1000))+'秒');return;}
+  P.lastQuestTime=Date.now();
+  P.lastQuest=questId;
+  updateTopbar();
+  openBattle({name:q.name,enemy:q.enemy,isBoss:false,questId,bossId:null});
+}
+function startBoss(bossId){
+  const b=BOSSES.find(x=>x.id===bossId);
+  if(!b)return;
+  const now=Date.now();
+  if(now-(P.lastQuestTime||0)<QUEST_CD){toast('クールダウン中！ あと'+(Math.ceil((QUEST_CD-(now-(P.lastQuestTime||0)))/1000))+'秒');return;}
+  P.lastQuestTime=Date.now();
+  P.lastBoss=bossId;
+  updateTopbar();
+  openBattle({name:b.name,enemy:b.enemy,isBoss:true,questId:null,bossId});
+}
+
+function openBattle({name,enemy,isBoss,questId,bossId}){
+  curScreen='battle'; // setIntervalによる再描画防止
+  document.getElementById('content').innerHTML=`
+    <div id="bwrap">
+      <div class="pt" style="color:${isBoss?'var(--boss2)':'var(--gold)'};">${isBoss?'👹':'⚔'} ${name}</div>
+      <div class="bstage">
+        <div class="combatant">
+          <div class="cicon">${getCls().icon}</div>
+          <div class="cname">${P.name} Lv.${P.level}</div>
+          <div style="width:100%;">
+            <div class="chp-t"><div class="chp-f chp-p" id="php" style="width:100%"></div></div>
+            <div class="chp-n" id="phn">${P.hp}/${(()=>{const s=getStats();return s.maxHp||P.maxHp;})()}</div>
+          </div>
+        </div>
+        <div class="vs-lbl">VS</div>
+        <div class="combatant">
+          <div class="cicon">${enemy.icon}</div>
+          <div class="cname">${enemy.name}</div>
+          <div style="width:100%;">
+            <div class="chp-t"><div class="chp-f ${isBoss?'chp-boss':'chp-e'}" id="ehp" style="width:100%"></div></div>
+            <div class="chp-n" id="ehn">${enemy.hp}/${enemy.hp}</div>
+          </div>
+        </div>
+      </div>
+      ${enemy.special?`<div style="font-size:8px;color:var(--boss2);text-align:center;">⚠ 特殊: ${enemy.special}</div>`:''}
+      <div class="blog" id="blog"><div class="ll ls">⚔ ${name} 開始！</div></div>
+      <div class="bact" id="bact">
+        <button class="btn ${isBoss?'btn-boss':'btn-gold'}" style="flex:1;" onclick="runBattle('${questId||''}','${bossId||''}',false)">▶ バトル開始</button>
+        <button class="btn btn-ghost btn-sm" onclick="runBattle('${questId||''}','${bossId||''}',true)">⏩ スキップ</button>
+      </div>
+    </div>`;
+}
+
+async function runBattle(questId,bossId,skip){
+  const isBoss=!!bossId;
+  const q=isBoss?BOSSES.find(x=>x.id===bossId):QUESTS.find(x=>x.id===questId);
+  const es=getStats();
+  const effectiveMaxHp=es.maxHp||P.maxHp;
+  // HPを実効最大HPでクランプ
+  if(P.hp>effectiveMaxHp)P.hp=effectiveMaxHp;
+  document.getElementById('bact').innerHTML=`<span style="color:var(--text3);font-size:9px;">戦闘中…</span>`;
+
+  let pHp=P.hp, eHp=q.enemy.hp;
+  // ボス特殊: ATK増加型
+  let bossAtkBonus=0;
+  const log=[];
+  const logAdd=(msg,cls='')=>{
+    log.push({msg,cls});
+    if(!skip){const el=document.getElementById('blog');if(el){el.innerHTML+=`<div class="ll ${cls}">${msg}</div>`;el.scrollTop=el.scrollHeight;}}
+  };
+  const updBars=()=>{
+    const ph=document.getElementById('php'),eh=document.getElementById('ehp');
+    const pn=document.getElementById('phn'),en=document.getElementById('ehn');
+    if(ph)ph.style.width=Math.max(0,pHp/effectiveMaxHp*100)+'%';
+    if(eh)eh.style.width=Math.max(0,eHp/q.enemy.hp*100)+'%';
+    if(pn)pn.textContent=`${Math.max(0,Math.round(pHp))}/${effectiveMaxHp}`;
+    if(en)en.textContent=`${Math.max(0,Math.round(eHp))}/${q.enemy.hp}`;
+  };
+  const delay=ms=>new Promise(r=>setTimeout(r,ms));
+
+  // 装備フラグ
+  const wpn=P.equipped.weapon,arm=P.equipped.armor,acc=P.equipped.acc;
+  const hasRegen=arm==='angelicArmor'||arm==='godArmor'||arm==='guardianShield'||arm==='seaKingArmor'||arm==='phoenixArmor'||arm==='celestialArmor'||arm==='godlikeArmor';
+  const hasSoul=wpn==='soulEdge'||wpn==='abyssalBlade';
+  const hasDrArmor=arm==='dragonArmor'||arm==='godArmor'||arm==='guardianShield'||arm==='seaKingArmor'||arm==='phoenixArmor'||arm==='celestialArmor'||arm==='godlikeArmor';
+  const hasBoots=acc==='rogueBoots';
+  const hasFang=acc==='dragonFang'||acc==='armageddonRing'||acc==='eternityRing'||acc==='cosmicRing';
+  const hasDeep=acc==='deepSeaRing';
+  const hasIgnis=acc==='ignisShard';const hasDemon=acc==='demonCore';const hasChaos=acc==='chaosCore';
+  const hasPrimordial=acc==='primordialCore';
+  // パッシブスキル適用
+  const pSkill=SKILLS[getCls().skill]||{};
+  let atkMult=1;
+  if(pSkill.type==='passive'&&pSkill.allStatBonus){
+    // 全ステ+20%: atkMult等に反映
+    atkMult*=pSkill.allStatBonus;
+  }
+  if(hasIgnis)atkMult*=1.1;if(hasDemon)atkMult*=1.15;if(hasChaos)atkMult*=1.1;if(hasPrimordial)atkMult*=1.2;
+  // ボスドロップ武器ボーナス
+  if(['infernoSword','godSlayer','divineSword'].includes(wpn))atkMult*=(wpn==='divineSword'?1.5:wpn==='godSlayer'?1.3:1.2);
+  if(['huntersEdge'].includes(wpn))atkMult*=1.0; // 会心ダメで補完
+
+  // 防御軽減
+  let dmgReduce=1;
+  if(pSkill.type==='passive'&&pSkill.dmgReduce){dmgReduce-=pSkill.dmgReduce;}
+  if(arm==='dragonArmor')dmgReduce=Math.max(0.3,dmgReduce-0.10);
+  if(arm==='godArmor')dmgReduce=Math.max(0.3,dmgReduce-0.15);
+  if(arm==='guardianShield')dmgReduce=Math.max(0.3,dmgReduce-0.20);
+  if(arm==='seaKingArmor')dmgReduce=Math.max(0.3,dmgReduce-0.18);
+  if(arm==='phoenixArmor')dmgReduce=Math.max(0.3,dmgReduce-0.15);
+  if(arm==='celestialArmor')dmgReduce=Math.max(0.25,dmgReduce-0.25);
+  if(arm==='godlikeArmor')dmgReduce=Math.max(0.2,dmgReduce-0.30);
+
+  const isHealer=['cleric','archpriest','paladin','godPriest','holyKnight'].includes(P.classId);
+  // ボス会心無効フラグ
+  const bossNoCrit=isBoss&&bossId==='b04';
+
+  let round=0;
+  while(pHp>0&&eHp>0){
+    round++;
+    if(round>150){logAdd('長期戦！引き分け…','ls');break;}
+
+    // 連続攻撃回数（SPD依存）
+    const hits=Math.min(5,1+Math.floor(es.spd/20)+(pSkill.type==='passive'&&pSkill.extraHit?pSkill.extraHit:0));
+    for(let h=0;h<hits;h++){
+      if(eHp<=0)break;
+      let pAtk=Math.max(1,Math.round(es.atk*atkMult)-Math.floor(q.enemy.def*0.45)+Math.floor(Math.random()*5-2));
+      // ボス毎ターンATK上昇
+      if(q.enemy.special&&q.enemy.special.includes('ATK+10'))bossAtkBonus+=0; // 敵側
+      // huntersEdge: SPD依存追加ダメ
+      if(wpn==='huntersEdge')pAtk+=Math.floor(es.spd*0.5);
+      const critRate=(bossNoCrit?0:es.luk*0.5+3)+(hasFang?15:0)+(hasDeep?10:0)+(acc==='cosmicRing'?30:0)+(pSkill.type==='passive'&&pSkill.critBonus?pSkill.critBonus:0);
+      const crit=!bossNoCrit&&Math.random()*100<critRate;
+      const critMult=wpn==='huntersEdge'?2.5:wpn==='divineSword'?3:1.9;
+      if(crit)pAtk=Math.floor(pAtk*critMult);
+      if(hasSoul){const dot=Math.floor(eHp*(wpn==='abyssalBlade'?0.05:0.03));eHp-=dot;}
+      eHp-=pAtk;
+      if(hits>1){logAdd(`　${h+1}撃目: ${pAtk}ダメ${crit?'🌟':''}${hasSoul?'＋DoT':''}`,crit?'la lsp':'la');}
+      else{logAdd(crit?`🌟 クリティカル！ ${q.enemy.name}に ${pAtk}ダメ！`:`あなたの攻撃！ ${q.enemy.name}に ${pAtk}ダメ`,'la');}
+    }
+    if(hits>1)logAdd(`⚡ ${hits}連続攻撃！`,'lsp');
+    // スキル発動
+    const sk=SKILLS[getCls().skill];
+    if(sk&&eHp>0){
+      if(sk.type==='proc'&&Math.random()*100<sk.chance){
+        let sDmg=Math.max(1,Math.round(es.atk*sk.atkMult*atkMult)-Math.floor(q.enemy.def*0.3));
+        eHp-=sDmg;
+        logAdd(`✨ スキル「${getCls().skill}」発動！ ${sDmg}ダメ！`,'lsp');
+      }else if(sk.type==='holy'&&Math.random()*100<sk.chance){
+        let sDmg=Math.max(1,Math.round(es.atk*sk.atkMult*atkMult)-Math.floor(q.enemy.def*0.3));
+        eHp-=sDmg;
+        const sHeal=Math.floor((sk.healPct||0.05)*effectiveMaxHp);
+        pHp=Math.min(effectiveMaxHp,pHp+sHeal);
+        logAdd(`✨ スキル「${getCls().skill}」！ ${sDmg}ダメ＋HP+${sHeal}`,'lsp');
+      }
+    }
+
+    if(!skip){updBars();await delay(260);}
+    if(eHp<=0)break;
+
+    // 自動回復
+    if(hasRegen){
+      const rg=Math.floor(effectiveMaxHp*(arm==='godlikeArmor'?0.08:arm==='celestialArmor'?0.06:0.03));
+      pHp=Math.min(effectiveMaxHp,pHp+rg);logAdd(`👼 自動回復 +${rg}HP`,'lh');
+    }
+    // ボス特殊: HP回復
+    if(isBoss&&q.enemy.special&&q.enemy.special.includes('自動回復+50')){
+      eHp=Math.min(q.enemy.hp,eHp+50);logAdd(`💢 ${q.enemy.name}が回復！`,'lboss');
+    }
+    if(isBoss&&q.enemy.special&&q.enemy.special.includes('HP5%回復')){
+      const rg=Math.floor(q.enemy.hp*0.05);eHp=Math.min(q.enemy.hp,eHp+rg);
+      logAdd(`💢 ${q.enemy.name}が大回復！(+${rg})`,'lboss');
+    }
+    // ボス特殊: ATK上昇
+    if(isBoss&&q.enemy.special&&q.enemy.special.includes('ATK+10')){
+      bossAtkBonus+=10;
+      if(bossAtkBonus%30===10)logAdd(`💢 ${q.enemy.name}のATKが上昇！`,'lboss');
+    }
+    // ボス特殊: 全体攻撃（3ターンに1回、1.5倍）
+    let eBaseAtk=q.enemy.atk+bossAtkBonus;
+    if(isBoss&&q.enemy.special&&q.enemy.special.includes('全体攻撃')&&round%3===0){
+      eBaseAtk=Math.floor(eBaseAtk*1.5);
+      logAdd(`💢 ${q.enemy.name}の全体攻撃！`,'lboss');
+    }
+    let eAtk=Math.max(1,eBaseAtk-Math.floor(es.def*0.45)+Math.floor(Math.random()*5-2));
+    eAtk=Math.floor(eAtk*dmgReduce);
+    const dodgeRate=es.spd*0.3+(hasBoots?20:0)+(pSkill.type==='passive'&&pSkill.dodgeBonus?pSkill.dodgeBonus:0);
+    if(!bossNoCrit&&Math.random()*100<dodgeRate){
+      logAdd(`💨 回避！ ${q.enemy.name}の攻撃をかわした`,'ld');
+    } else {
+      pHp-=eAtk;
+      logAdd(`${q.enemy.name}の攻撃！ あなたに ${eAtk}ダメ`,'');
+    }
+    if(isHealer&&round%3===0){
+      const healMult=(pSkill.type==='passive'&&pSkill.healBonus)?pSkill.healBonus:1;
+      const heal=Math.floor((es.luk*2+15)*healMult);
+      pHp=Math.min(effectiveMaxHp,pHp+heal);
+      logAdd(`💚 ${getCls().skill}で ${heal}HP回復！`,'lh');
+    }
+    if(!skip){updBars();await delay(260);}
+  }
+
+  if(skip)updBars();
+  const won=eHp<=0;
+  P.hp=effectiveMaxHp;
+
+  if(won){
+    if(isBoss){
+      // ボス勝利処理
+      const b=BOSSES.find(x=>x.id===bossId);
+      P.exp+=b.reward.exp;P.coins+=b.reward.gold;
+      logAdd('','');logAdd(`✅ ボス討伐！`,'ls');
+      logAdd(`EXP +${b.reward.exp}  💰 +${b.reward.gold}`,'ls');
+      // 称号付与
+      if(!P.bossCleared.includes(bossId)){
+        P.bossCleared.push(bossId);
+        if(b.title&&!P.titles.includes(b.title)){
+          P.titles.push(b.title);
+          if(!P.activeTitle)P.activeTitle=b.title;
+          logAdd(`🏆 称号獲得：【${b.title}】`,'ls');
+        }
+      }
+      // ボスドロップ（3-8%）
+      const bDrops=[];
+      b.bossDrops.forEach(id=>{
+        const it=ITEMS[id];
+        const rate=it.rarity==='bossonly'?0.05:0.08;
+        if(Math.random()<rate){P.inventory.push({id,enhLv:0,fav:false});bDrops.push(it.name);}
+      });
+      if(bDrops.length)logAdd(`💎 ボスドロップ！: ${bDrops.join('、')}`,'lboss');
+      // レベルアップ
+      while(P.exp>=P.expNext){doLevelUp(logAdd);}
+    } else {
+      const q2=QUESTS.find(x=>x.id===questId);
+      const expGain=q2.exp,goldGain=q2.gold+Math.floor(Math.random()*q2.gold*0.25);
+      P.exp+=expGain;P.coins+=goldGain;
+      const lukBonus=Math.min(0.3,(getStats().luk-4)*0.003);
+      const drops=[];
+      q2.drops.forEach(id=>{
+        const it=ITEMS[id];if(!it)return;
+        const base={legendary:0.01,epic:0.03,rare:0.06,uncommon:0.10,common:0.10}[it.rarity]||0.08;
+        if(Math.random()<Math.min(base+lukBonus,base*2)){P.inventory.push({id,enhLv:0,fav:false});drops.push(it.name);}
+      });
+      logAdd('','');logAdd('✅ 勝利！','ls');
+      logAdd(`EXP +${expGain}  💰 +${goldGain}`,'ls');
+      if(drops.length)logAdd(`💎 ドロップ: ${drops.join('、')}`,'llt');
+      else logAdd('（ドロップなし）','');
+      if(!P.cleared.includes(questId))P.cleared.push(questId);
+      while(P.exp>=P.expNext){doLevelUp(logAdd);}
+    }
+  } else {
+    logAdd('','');logAdd('💀 敗北…','ls');
+    const ce=Math.floor(q.reward?.exp||q.exp||100)*0.15;
+    P.exp+=Math.floor(ce);logAdd(`EXP +${Math.floor(ce)}（敗北ボーナス）`,'ls');
+    while(P.exp>=P.expNext){doLevelUp(logAdd);}
+  }
+
+  updateTopbar();
+  const ae=document.getElementById('bact');
+  if(ae)ae.innerHTML=`
+    <div style="width:100%;text-align:center;padding:8px 0 4px;">
+      <div style="font-size:28px;margin-bottom:4px;">${won?'🏆':'💀'}</div>
+      <div style="font-family:'Cinzel',serif;font-size:${won?'18':'16'}px;color:${won?'var(--gold2)':'var(--red2)'};font-weight:700;margin-bottom:8px;">
+        ${won?'VICTORY！':'DEFEAT...'}
+      </div>
+      <button class="btn btn-${won?'gold':'red'} btn-full" onclick="go('${isBoss?'boss':'quest'}')">
+        ${won?'✅ 完了':'💀 リトライ'} → ${isBoss?'挑戦':'クエスト'}一覧に戻る
+      </button>
+    </div>`;
+  if(skip){
+    const le=document.getElementById('blog');
+    if(le){le.innerHTML=log.map(l=>`<div class="ll ${l.cls}">${l.msg||'　'}</div>`).join('');le.scrollTop=le.scrollHeight;}
+  }
+}
+
+function doLevelUp(logAdd){
+  P.exp-=P.expNext;P.level++;
+  P.expNext=Math.floor(P.expNext*1.18+P.level*5);
+  const g=CT[P.classId].growth;
+  P.stats.hp+=g.hp;P.maxHp+=g.hp*3;
+  P.stats.atk+=g.atk;P.stats.def+=g.def;P.stats.spd+=g.spd;P.stats.luk+=g.luk;
+  P.hp=P.maxHp;
+  P.freePoints+=3;
+  logAdd(`🎉 Lv.${P.level}に上がった！ +3P スキル発動・ステータス上昇！`,'ls');
+  if(P.level===20||P.level===40)logAdd('⭐ 職業進化が解放！ 職業タブを確認！','ls');
+}
+
+// ═══════ EQUIP ═══════
+function renderEquip(){
+  const slLabels={weapon:'⚔ 武器',armor:'🔰 防具',acc:'💍 アクセサリ'};
+  const uniqueIds=[...new Set(P.inventory.map(x=>x.id))];
+
+  document.getElementById('content').innerHTML=`
+    <div class="panel"><div class="pt">🎒 現在の装備</div>
+      <div class="eslots">
+        ${Object.entries(slLabels).map(([slot,label])=>{
+          const id=P.equipped[slot];const it=ITEMS[id];const entry=invFind(id);
+          return`<div class="eslot ${it?'has-item':''}" onclick="${it?`unequipItem('${slot}')`:''}" title="${it?'タップで外す':''}">
+            <div class="esl-lbl">${label}</div>
+            ${it?`<div class="esl-name">${it.icon} ${it.name}${entry&&entry.enhLv?' <span style=color:var(--orange2)>+'+entry.enhLv+'</span>':''}</div>
+                  <div class="esl-stats">${statLine(it,entry?.enhLv||0)}</div>
+                  ${it.special?`<div style="font-size:7px;color:var(--cyan2);margin-top:1px;">${it.special}</div>`:''}
+                  <div style="font-size:7px;color:var(--red2);margin-top:1px;">タップで外す</div>`
+                :`<div class="esl-empty">空</div>`}
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:4px;margin-top:2px;">
+        <button class="btn btn-cyan btn-sm" style="flex:1;" onclick="autoEquip()">⚡ 最強自動装備</button>
+        <button class="btn btn-orange btn-sm" style="flex:1;" onclick="if(confirm('装備中・お気に入り以外を全て売却しますか？'))sellBulk()">💰 一括売却</button>
+      </div>
+    </div>
+    <div class="panel"><div class="pt">🎒 所持品（${P.inventory.length}件）</div>
+      ${P.inventory.length===0?`<div class="empty-st">アイテムがありません<br>クエストでドロップを狙おう！</div>`:`
+      <div class="ilist">
+        ${uniqueIds.map(id=>{
+          const it=ITEMS[id];if(!it)return'';
+          const entries=P.inventory.filter(x=>x.id===id);
+          const cnt=entries.length;
+          const entry=entries[0];
+          const eEq=isEquipped(id);
+          const eFav=entry?.fav;
+          const eLv=entry?.enhLv||0;
+          const nextCost=enhanceCost(id,eLv);
+          return`<div class="irow">
+            <div class="iicon">${it.icon}</div>
+            <div class="iinfo">
+              <div class="iname">${it.name}${cnt>1?` ×${cnt}`:''}${eLv>0?` <span style="color:var(--orange2);font-weight:700;">+${eLv}</span>`:''} ${eEq?`<span class="eq-badge">装備中</span>`:''}</div>
+              <div class="istats">${statLine(it,eLv)}</div>
+              ${it.special?`<div class="sp-badge">${it.special}</div>`:''}
+              <div class="irarity r-${it.rarity}">${RL[it.rarity]}</div>
+              <div class="enhance-row">
+                <span class="enhance-lv">強化+${eLv}</span>
+                <button class="btn btn-orange btn-xs" onclick="enhanceItem('${id}')">強化 💰${nextCost.toLocaleString()}</button>
+              </div>
+            </div>
+            <div class="iact">
+              <span class="fav-badge" onclick="toggleFav('${id}')" title="${eFav?'お気に入り解除':'お気に入り追加'}">${eFav?'⭐':'☆'}</span>
+              ${eEq?`<button class="btn btn-ghost btn-xs" onclick="unequipItem('${it.slot}')">外す</button>`
+                   :`<button class="btn btn-blue btn-xs" onclick="equipItem('${id}')">装備</button>`}
+              ${eEq||eFav
+                ?`<button class="btn btn-ghost btn-xs" style="opacity:.3;cursor:not-allowed;" title="売却不可">売</button>`
+                :`<button class="btn btn-ghost btn-xs" onclick="sellItem('${id}')">売</button>`}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`}
+    </div>`;
+}
+
+function equipItem(id){
+  const it=ITEMS[id];if(!it)return;
+  P.equipped[it.slot]=id;updateTopbar();renderEquip();toast(`${it.name} を装備！`);
+}
+function unequipItem(slot){P.equipped[slot]=null;updateTopbar();renderEquip();}
+function sellItem(id){
+  if(isEquipped(id)){toast('装備中は売却できません！');return;}
+  if(isFav(id)){toast('お気に入りは売却できません！');return;}
+  const idx=P.inventory.findIndex(x=>x.id===id);if(idx<0)return;
+  P.inventory.splice(idx,1);
+  const price=Math.max(10,Math.floor((ITEMS[id].price||80)*0.4));
+  P.coins+=price;updateTopbar();renderEquip();toast(`${ITEMS[id].name}を売却 (+${price}G)`);
+}
+
+// ═══════ SHOP ═══════
+function renderShop(){
+  const cleared=P.cleared.length;
+  const shopItems=Object.entries(ITEMS).filter(([,v])=>v.shop&&(v.shopReq||0)<=cleared).map(([k])=>k);
+  const locked=Object.entries(ITEMS).filter(([,v])=>v.shop&&(v.shopReq||0)>cleared).map(([k,v])=>({k,v}));
+  document.getElementById('content').innerHTML=`
+    <div class="panel"><div class="pt">💰 所持金</div>
+      <div style="font-size:18px;font-weight:700;color:var(--gold2);">💰 ${P.coins.toLocaleString()} G</div>
+      <div style="font-size:8px;color:var(--text3);margin-top:4px;">クエストを進めると新商品が解放されます（現在${cleared}クエストクリア済み）</div>
+    </div>
+    <div class="panel"><div class="pt">🏪 商品一覧</div>
+      ${shopItems.map(id=>{
+        const it=ITEMS[id],ok=P.coins>=it.price;
+        return`<div class="shop-item" style="opacity:${ok?1:.45}">
+          <div class="iicon">${it.icon}</div>
+          <div class="iinfo" style="flex:1;">
+            <div class="iname">${it.name}</div>
+            <div class="istats">${statLine(it,0)}</div>
+            <div class="irarity r-${it.rarity}">${RL[it.rarity]}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+            <div class="sp">💰${it.price.toLocaleString()}</div>
+            <button class="btn btn-gold btn-xs" onclick="buyItem('${id}')" ${ok?'':'disabled'}>購入</button>
+          </div>
+        </div>`;
+      }).join('')}
+      ${locked.length?`<div style="font-size:9px;color:var(--text3);margin-top:8px;padding:6px;background:rgba(0,0,0,.2);border-radius:6px;">
+        🔒 あと${locked[0].v.shopReq-cleared}クエストクリアで新商品解放
+      </div>`:''}
+    </div>`;
+}
+function buyItem(id){
+  const it=ITEMS[id];
+  if(P.coins<it.price){toast('お金が足りません！');return;}
+  P.coins-=it.price;P.inventory.push({id,enhLv:0,fav:false});
+  updateTopbar();renderShop();toast(`${it.name} を購入！`);
+}
+
+// ═══════ BOSS ═══════
+function renderBoss(){
+  const now=Date.now();
+  const cdElapsed=now-(P.lastQuestTime||0);
+  const cdReady=cdElapsed>=QUEST_CD;
+  const cdLeft=Math.max(0,Math.ceil((QUEST_CD-cdElapsed)/1000));
+  const lastB=P.lastBoss?BOSSES.find(b=>b.id===P.lastBoss):null;
+  const bossCard=(b,isPinned)=>{
+    const cleared=P.bossCleared.includes(b.id);
+    const under=P.level<b.rec-5;
+    return`<div class="boss-card" style="${isPinned?'border-color:var(--gold2);background:rgba(232,184,76,.03);':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+        <div>
+          <div class="boss-name">${isPinned?'⭐ ':''}${b.enemy.icon} ${b.name}</div>
+          <div class="boss-desc">${b.desc}</div>
+        </div>
+        ${cleared?'<span class="boss-clear-badge">討伐済み</span>':''}
+      </div>
+      <div class="boss-stats">
+        <span>HP: ${b.enemy.hp.toLocaleString()}</span>
+        <span>ATK: ${b.enemy.atk}</span>
+        <span>DEF: ${b.enemy.def}</span>
+        <span>推奨Lv.${b.rec}${under?' <span style="color:var(--red2);">⚠</span>':''}</span>
+      </div>
+      <div class="boss-reward">
+        🏆 称号: 【${b.title}】<br>
+        💎 ドロップ: ${b.bossDrops.map(id=>ITEMS[id]?.name||id).join('、')}（各5〜8%）<br>
+        ⚔ 特殊: ${b.enemy.special}
+      </div>
+      <div style="display:flex;gap:5px;align-items:center;">
+        <button class="btn btn-boss" style="flex:1;${under?'opacity:.6':''}" onclick="cdReady?startBoss('${b.id}'):toast('クールダウン中！ あと'+cdLeft+'秒')">
+          ${cdReady?'✅':'⏱'} ${under?'⚠ ':''} 挑戦
+        </button>
+        <div style="font-size:9px;color:${cdReady?'var(--green2)':'var(--stamina)'};">${cdReady?'GO！':cdLeft+'秒後'}</div>
+      </div>
+    </div>`;
+  };
+  document.getElementById('content').innerHTML=`
+    <div class="panel" style="border-color:rgba(204,51,102,.4);background:linear-gradient(135deg,#1a0820,#1e0d28);">
+      <div class="pt" style="color:var(--boss2);">👹 ボス挑戦</div>
+      <div class="info-box">強力なボスに挑戦して<b>称号</b>と<b>ボス専用装備</b>を獲得しよう！<br>
+      ボス装備は通常ドロップより大幅に強力。ドロップ率は5〜8%。</div>
+    </div>
+    ${lastB?`<div class="panel" style="border-color:rgba(232,184,76,.4);padding:7px 10px;">
+      <div style="font-size:8px;color:var(--gold2);margin-bottom:4px;">⭐ 最近挑戦したボス</div>
+      ${bossCard(lastB,true)}
+    </div>`:''}
+    ${BOSSES.map(b=>bossCard(b,false)).join('')}`;
+}
+
+// ═══════ CLASS ═══════
+function renderClass(){
+  const cls=getCls();
+  const canEv1=P.level>=20&&cls.tier===0;
+  const canEv2=P.level>=40&&cls.tier===1;
+  const canEv=canEv1||canEv2;
+
+  document.getElementById('content').innerHTML=`
+    <div class="panel ${canEv?'evolve-ready':''}">
+      <div class="pt">✨ 現在の職業</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+        <div style="font-size:40px;">${cls.icon}</div>
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--gold2);">${cls.name}</div>
+          <div style="font-size:9px;color:var(--text2);margin-top:1px;">${cls.desc}</div>
+          <div style="font-size:9px;color:var(--purple2);margin-top:1px;">スキル: ${cls.skill}</div>
+          ${SKILLS[cls.skill]?`<div style="font-size:8px;color:var(--cyan2);margin-top:2px;background:rgba(34,192,216,.08);padding:3px 5px;border-radius:4px;">⚡ ${SKILLS[cls.skill].desc}</div>`:''}
+          <div style="font-size:9px;color:var(--gold2);margin-top:1px;">✦ 得意: ${cls.boost.map(b=>BN[b]).join('・')}</div>
+        </div>
+      </div>
+      <div style="font-size:8px;color:var(--text3);">成長率 HP+${cls.growth.hp} ATK+${cls.growth.atk} DEF+${cls.growth.def} SPD+${cls.growth.spd} LUK+${cls.growth.luk}</div>
+    </div>
+
+    ${canEv?`
+    <div class="panel">
+      <div class="pt" style="color:var(--gold2);">⭐ 職業進化！</div>
+      <div style="font-size:9px;color:var(--text2);margin-bottom:7px;">進化先を選んでください。取り消せません。<br>進化時：全ステータス大幅上昇＋成長率アップ＋+5ポイント</div>
+      <div class="class-grid">
+        ${cls.evolve1.map(eid=>{const ec=CT[eid];
+          return`<div class="cc" onclick="evolveClass('${eid}')">
+            <div class="ci">${ec.icon}</div><div class="cn">${ec.name}</div>
+            <div class="cd">${ec.desc}</div>
+            <div class="tags">${ec.tags.map(t=>`<span class="tag tag-${t}">${TL[t]}</span>`).join('')}</div>
+            <div style="margin-top:3px;font-size:7px;color:var(--gold2);">✦ 得意: ${ec.boost.map(b=>BN[b]).join('・')}</div>
+            <div style="font-size:7px;color:var(--purple2);">スキル: ${ec.skill}</div>
+            ${SKILLS[ec.skill]?`<div style="font-size:7px;color:var(--cyan2);margin-top:2px;">${SKILLS[ec.skill].desc}</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:`
+    <div class="panel"><div class="pt">🗺️ 次の進化</div>
+      ${cls.tier===0?`→ <span style="color:var(--gold2);">${cls.evolve1.map(id=>CT[id].name).join(' / ')}</span> <span style="color:var(--text3);">（Lv.20）</span>`
+      :cls.tier===1?`→ <span style="color:var(--gold2);">${cls.evolve1.map(id=>CT[id]?.name||'???').join(' / ')}</span> <span style="color:var(--text3);">（Lv.40）</span>`
+      :`<span style="color:var(--green2);">🌟 最終形態に到達！</span>`}
+    </div>`}
+
+    <div class="panel"><div class="pt">📜 全職業ツリー</div>
+      ${BASE.map(bid=>{const bc=CT[bid];
+        return`<div style="margin-bottom:7px;">
+          <span style="font-size:13px;">${bc.icon}</span>
+          <span style="font-family:'Cinzel',serif;font-size:10px;color:${P.classId===bid?'var(--gold2)':'var(--text2)'};">${bc.name}</span>
+          <div style="padding-left:16px;font-size:8px;color:var(--text3);margin-top:1px;">
+            ${bc.evolve1.map(e1=>{const c1=CT[e1];
+              return`→<span style="color:${P.classId===e1?'var(--gold2)':'var(--text3)'};">${c1.icon}${c1.name}</span>
+              ${c1.evolve1.map(e2=>{const c2=CT[e2];
+                return` →<span style="color:${P.classId===e2?'var(--gold2)':'var(--text3)'};">${c2.icon}${c2.name}</span>`;
+              }).join('')}　`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function evolveClass(newId){
+  if(!confirm(`${CT[newId].name}に進化しますか？`))return;
+  P.classId=newId;
+  const ng=CT[newId].growth;
+  // 進化ボーナス：成長率×5レベル分 + 全ステ大幅上昇
+  P.stats.hp +=ng.hp*5;  P.maxHp+=ng.hp*15;
+  P.stats.atk+=ng.atk*5; P.stats.def+=ng.def*5;
+  P.stats.spd+=ng.spd*5; P.stats.luk+=ng.luk*5;
+  P.hp=P.maxHp;
+  P.freePoints+=5;
+  updateTopbar();renderClass();toast(`✨ ${CT[newId].name} に進化！ ステータス大幅上昇！`);
+}
+
+// ═══════ UTILS ═══════
+function statLine(it,enhLv=0){
+  const m=1+enhLv*0.08;
+  const p=[];
+  if(it.hp)p.push(`HP+${Math.floor(it.hp*m)}`);
+  if(it.atk)p.push(`ATK+${Math.floor(it.atk*m)}`);
+  if(it.def)p.push(`DEF+${Math.floor(it.def*m)}`);
+  if(it.spd)p.push(`SPD${it.spd>=0?'+':''}${Math.floor(it.spd*m)}`);
+  if(it.luk)p.push(`LUK+${Math.floor(it.luk*m)}`);
+  return p.join(' ')||'—';
+}
+function toast(msg){
+  const el=document.createElement('div');
+  el.className='toast';el.textContent=msg;
+  document.body.appendChild(el);setTimeout(()=>el.remove(),2200);
+}
+
+renderTitle();
+</script>
+</body>
+</html>
